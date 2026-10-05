@@ -7,3 +7,5 @@ This Git checkout is the source of truth. Make site changes here, review git dif
 - No build step; GitHub Pages publishes main at the repository root.
 - Verify changed navigation and desktop/mobile layout before publishing.
 - Never add credentials or local authentication files to the repository.
+
+Local Windows toolchain: if system Git fails in HTTPS transport, use `python ../git-tools/git-safe.py <git arguments>` in this checkout. This local wrapper uses official MinGit with explicit executable paths and the existing GitHub CLI credential helper. Do not copy authentication files into the repository.
