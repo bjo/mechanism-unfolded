@@ -1,6 +1,6 @@
-INSIDE · 기계식 시계 / 게시 전 검토본
+Mechanism Unfolded · 기계식 시계
 
-실제 게시하지 않았습니다. index.html이 시작 파일입니다.
+GitHub Pages로 게시합니다. index.html은 홈페이지, watch.html은 시계 포스트입니다.
 압축을 푼 폴더에서 python -m http.server 8765 를 실행한 뒤
 http://127.0.0.1:8765/index.html 을 여세요.
 Three.js 0.160.1은 jsDelivr CDN에서 불러오므로 인터넷 연결과 WebGL이 필요합니다.
