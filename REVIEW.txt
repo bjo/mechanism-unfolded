@@ -1,0 +1,83 @@
+INSIDE · 기계식 시계 / 게시 전 검토본
+
+실제 게시하지 않았습니다. index.html이 시작 파일입니다.
+압축을 푼 폴더에서 python -m http.server 8765 를 실행한 뒤
+http://127.0.0.1:8765/index.html 을 여세요.
+Three.js 0.160.1은 jsDelivr CDN에서 불러오므로 인터넷 연결과 WebGL이 필요합니다.
+
+구성
+기본 01–07: 태엽 / 기어열 / 탈진기 / 밸런스 / 시·분침 / 용두 / 초침·동축
+심화 08–12: 오토매틱 / 날짜 / GMT / 문페이즈 / 크로노그래프 측정·누적·리셋
+?lesson=10 등의 주소로 챕터를 직접 열고 새로고침할 수 있습니다.
+
+수정 및 검토
+- 용두 보정 전달계: 직각 입력축, 전달 기어, 편심 핑거와 인덱스 휠을 전체/확대 뷰에 공유. GMT/달판 이동은 접촉 구간에 동기화. 보정 핑거 형상과 행정은 교육용 단순화.
+- 태엽통 래칫 휠은 브리지 표시와 독립. 초록 클릭은 barrel 선택 그룹에 포함.
+- 전체 챕터 조작계는 3D 위, 챕터 안내는 설명 칼럼 위에 배치.
+- 기본 용두는 감기/시간 맞춤의 두 위치. 날짜·GMT·달 위상은 중간 위치에서 독립 보정. 교육용 선택이며 실제 칼리버의 위치 구성은 다를 수 있음.
+- 3D 옆 설명 칼럼: 입문·흐름 / 선택한 부품 / 왜 이렇게 만들었을까요 탭. 데스크톱 독립 스크롤, 모바일 세로 배치.
+- 심화편은 기본 시계 + 현재 선택한 컴플리케이션 하나만 표시. 이전 기능은 누적 표시하지 않음.
+- 전체/확대 크로노그래프의 반환 기어, 측정축, 바늘을 같은 상태로 동기화.
+- 푸셔는 크로노그래프 기구 층에 배치. 컬럼 휠 옆 푸셔: 시작·정지, 해머 옆 푸셔: 리셋.
+- 분 넘김 인덱스 휠과 누적 휠, 두 하트 캠과 해머를 포함.
+- GMT 2:1 감속과 독립 시차 조정, 24시간 눈금.
+- 59치 달판, 두 개의 달, 곡선 표시창, 신월/보름 예제 및 보정.
+- 날짜와 달판은 자정 경계의 수치 오차를 보정. 역방향 시간 맞춤은 달판을 되돌리지 않음.
+- 기본/심화 메뉴 구분, 12개 챕터 전환, 390px 모바일 폭 검토.
+- 스타일 분리, 커리큘럼 모듈 분리, 달력 계산과 렌더링 분리.
+- 미사용 이전 결과 이미지·작업 스크립트는 이 게시용 묶음에서 제외.
+
+검토 시 권장 순서
+10 GMT: +1시간 → 12시간 진행. 현지 시침 1회전 / GMT 반 회전 비교.
+11 문페이즈: 하루 진행 → 달판 한 칸 전진. 덮개 열기 → 두 달 확인.
+12 크로노그래프: 태엽 감기 → 푸셔 시작 → 전체/확대 전환 → 정지.
+12 크로노그래프: 58초부터 분 넘김 → 정지 → 리셋 예제와 접점 관찰.
+구조 펼치기·다이얼 보기·투시를 조합해 각 층과 축을 확인하세요.
+
+모델의 범위
+특정 칼리버를 복제한 제작용 CAD가 아니라 작동 원리를 위한 자체 기하 모델입니다.
+기어비·회전 방향·표시 상태는 검증했지만 전 부품의 체적 충돌, 토크, 마찰,
+스프링 하중 및 제작 공차를 계산하지 않습니다. 푸셔 링크와 GMT 조정 칼라는
+작동 경로를 읽도록 단순화했습니다. 제조 가능한 기계 설계 검증을 뜻하지 않습니다.
+문페이즈는 29.5일 기본형이며 현재 실제 달의 위상을 자동 계산하지 않습니다.
+시간 진행 버튼은 관찰용 시간 가속이며 실제 태엽 소모를 적산하는 기능이 아닙니다.
+IAB 데스크톱 및 390px 폭에서 검토했습니다. 실제 iOS/Android 기기 검증은 별도입니다.
+실제 호스팅 후 도메인·캐시·CDN 접근성 검토가 필요합니다.
+
+의존성
+Three.js 0.160.1 / MIT / https://threejs.org/ (외부 CDN, 이 압축에 미포함)
+원리 참고 링크는 각 챕터 설명 하단에 있습니다.
+
+자동 검사 결과
+check-calendar.cjs: PASS
+PASS: GMT pitch/module and 2:1 train, independent offset, daily moon indexing, 59-day/29.5-day cycles, drift, new/full moon aperture clearance.
+PASS: moon day counter advances on forward midnight crossings, holds on reverse setting, and resets independently of phase correction.
+
+check-chrono.cjs: PASS
+PASS: clutch pivot and disengagement clearance; 126 starting angles reset with nonpenetrating contact and monotonic hammer travel; reset interlocks and column stability.
+
+check-chrono-index.cjs: PASS
+PASS: minute index is held between impulses, smoothly advances one tooth at minute boundary, and transfer pitch circles meet.
+
+check-advanced.cjs: PASS
+PASS: bidirectional winding and full-wind slip, midnight/31-to-1/quickset interlock, chrono start-stop-resume-reset and counters.
+PASS: chrono concentric clearances, counter arbor clears existing wheel envelopes, auto output matches original winding arbor.
+PASS: A/B engaged race velocities match the common lower train; free race has relative motion.
+
+check-movement.cjs: PASS
+PASS: six meshing pairs, pitch distance/module/axial plane/velocity, plate clearance, 4 Hz escapement, 12:1 hands.
+PASS: closed-barrel clearance = 0.052 model units; lower pinion and raised train stay aligned.
+PASS: fork arm sweep clears escape teeth; roller pin enters fork slot in XY and Z throughout central passage.
+PASS: three hands show 60 seconds, 60 minutes, and 12 hours per revolution.
+PASS: crown routes winding and bidirectional time-setting separately; seconds are not set by crown.
+PASS: setting shaft output meshes with motion works in distance, tooth module, layer and speed; winding pair modules match.
+PASS: central seconds transfer has two pitch contacts, correct direction and speed, hollow center clearance.
+
+check-keyless.cjs: PASS
+PASS: winding contacts, tooth modules, orthogonal contact velocities, setting output, fixed yoke through all positions.
+
+check-orbit.cjs: PASS
+PASS: full 360-degree orbit, normalized rotation across poles, idle stability, zoom bounds, pan and explicit reset.
+
+check-ratchet.cjs: PASS
+PASS: 2400 phases touch tooth surface, constant pawl length, steep-flank locking, free lift/return, relative-motion tracking.
