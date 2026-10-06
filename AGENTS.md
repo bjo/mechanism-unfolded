@@ -9,3 +9,5 @@ This Git checkout is the source of truth. Make site changes here, review git dif
 - Never add credentials or local authentication files to the repository.
 
 Local Windows toolchain: if system Git fails in HTTPS transport, use `python ../git-tools/git-safe.py <git arguments>` in this checkout. This local wrapper uses official MinGit with explicit executable paths and the existing GitHub CLI credential helper. Do not copy authentication files into the repository.
+
+For changes to moving 3D mechanisms, contact geometry, timing, or inspection views, read and apply `skills/mechanism-audit/SKILL.md`. Run the relevant mechanical regressions and browser contact-cycle verification before publishing. Purely editorial changes do not require a full mechanism audit.

@@ -18,7 +18,7 @@ window.createAutoExplainer=function(host){
  <text x="705" y="82" text-anchor="middle">파랑: 로터를 따라 회전</text><text x="705" y="111" text-anchor="middle">주황: 잠김 · 힘 전달</text><text x="705" y="140" text-anchor="middle">회색: 헛돎 · 전달 차단</text>
  </svg>
  <div class="auto-compare"><article id="autoCaseCW"><strong>↻ 로터가 시계 방향이면</strong><p>A의 위층은 ↺로 돕니다. A가 잠겨 아래층까지 함께 돌리고, B는 위층과 아래층 사이에서 미끄러집니다.</p><b>A 잠김 → 공통 출력 → 태엽 감기</b></article><article id="autoCaseCCW"><strong>↺ 로터가 반시계 방향이면</strong><p>A의 위층은 ↻, 그다음 B의 위층은 ↺로 돕니다. 이번에는 B가 잠겨 아래층을 구동하고 A는 헛돕니다.</p><b>B 잠김 → 같은 공통 출력 → 태엽 감기</b></article></div>
- <p class="auto-key-note"><b>공회전 = 멈춰 있음은 아닙니다.</b> 잠기지 않은 쪽도 위층은 로터에, 아래층은 공통 출력에 물려 돌아갑니다. 두 층이 서로 독립적으로 회전하는 상태입니다. 확대 단면에서 걸쇠 끝이 경사면을 타고 올라간 뒤 다음 홈으로 내려오는 접촉을 보세요. 내부 걸쇠 모양은 원리를 보이기 위한 단순화입니다.</p><p id="autoLiveNote"></p>`;
+ <p class="auto-key-note"><b>공회전 = 멈춰 있음은 아닙니다.</b> 잠기지 않은 쪽도 위층은 로터에, 아래층은 공통 출력에 물려 돌아갑니다. 두 층이 서로 독립적으로 회전하는 상태입니다. 확대 단면에서 걸쇠 끝이 경사면을 타고 올라간 뒤 다음 홈으로 내려오는 접촉을 보세요. 내부 걸쇠 모양은 원리를 보이기 위한 단순화입니다.</p><p><b>용두 옆 기어가 돌아도, 용두는 정지합니다.</b> 이 모형에서는 태엽축에서 크라운 휠과 감기 피니언까지 회전이 전달됩니다. 감기 피니언은 용두 축에서 자유롭게 돌며, 브레게 톱니가 미끄러져 역구동을 차단합니다. 실제 칼리버마다 분리 방식은 다릅니다.</p><p id="autoLiveNote"></p>`;
  const $=id=>el.querySelector('#'+id);const cutaway=createRatchetCutaway(el);
  return {element:el,update({visible,direction,moving,paused,rotor,output,slipping,poses}){el.hidden=!visible;if(!visible)return;cutaway.update(poses,paused);const a=direction<0;
  $('autoDirection').textContent=(paused?'일시 정지 · ':moving?'입력 중 · ':'마지막 입력 · ')+(a?'↻ 시계 방향 — A 잠김':'↺ 반시계 방향 — B 잠김');

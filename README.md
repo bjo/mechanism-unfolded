@@ -15,3 +15,13 @@ The site is static HTML, CSS and JavaScript; no build step is required. The watc
 ## Publishing
 
 Review and commit changes, then push to `main`. GitHub Pages deploys the repository root automatically. Keep all updates in Git.
+
+## Mechanical regression checks
+
+Apply `skills/mechanism-audit/SKILL.md` when changing mechanism geometry or motion.
+
+- `node tests/mechanics.cjs`: timing, indexing contacts, ratios, reset cams, ratchets and state boundaries.
+- `python tests/audit_faults.py`: verify the reusable auditor detects six deliberately injected faults.
+- Open `watch.html?lesson=1&audit=1` to enable read-only DOM diagnostics. The main canvas exposes `data-mesh-audit`, `data-timing` and `data-keyless`; `#advancedPanel` exposes contact and full/inspection copy checks. These are calculated from actual rendered gear transforms, not just the design constants.
+
+The October 2026 audit covered all 12 chapters, 39 registered spur-gear connections (40 with the chronograph clutch engaged), full/inspection transform equality, date 31-to-1, quickset direction, moon/minute indexing, automatic winding and reset interlocks. Re-run affected browser interactions after every mechanism change. Pitch-plane checks do not prove tooth-flank clearance, face-gear contact, friction, material deformation or manufacturing feasibility. Flexible fingers and quickset couplings remain explicitly simplified teaching models.

@@ -28,6 +28,8 @@
  };
  const chronoScale=.45,chronoAngle=-.50,cx=2*chronoScale,cy=-1.65*chronoScale;
  spec.advanced={automatic:{reduction:8},chronograph:{scale:chronoScale,angle:chronoAngle,z:2.72,measuredRadius:.020,secondsInner:.026,secondsOuter:.033,counterPoint:[cx*Math.cos(chronoAngle)-cy*Math.sin(chronoAngle),cx*Math.sin(chronoAngle)+cy*Math.cos(chronoAngle)]}};
+ // The oscillator uses the same simulated clock as the gear train.
+ spec.balanceAngle=seconds=>Math.sin((seconds*spec.frequency%1)*Math.PI*2)*2.1;
  spec.handAngles=(seconds,offset=0)=>({minute:-(seconds+offset)/3600*Math.PI*2,hour:-(seconds+offset)/43200*Math.PI*2,second:-seconds/60*Math.PI*2});
  // External winding train, with an intermediate wheel. All pitch circles share one module.
  const k=spec.keyless;k.winding={p:[2.05,0],idlerR:k.crownR*32/34};

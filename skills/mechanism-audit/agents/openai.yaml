@@ -1,0 +1,6 @@
+interface:
+  display_name: "3D Mechanism Audit"
+  short_description: "Detect and repair 3D mechanism connection and motion faults"
+  default_prompt: "Use $mechanism-audit to inspect this 3D mechanism, reproduce and repair connection or motion faults, and verify the result."
+policy:
+  allow_implicit_invocation: true

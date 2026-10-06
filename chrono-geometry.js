@@ -1,4 +1,6 @@
 (function(root){
+ const Index=typeof module!=='undefined'&&module.exports?require('./indexing-motion.js'):root.IndexingMotion;
+ const minuteIndexing=Index.external({period:60,teeth:30,distance:Math.hypot(.9,1.65),reach:Math.hypot(.9,1.65)-.45});
  const tau=2*Math.PI,heart=[];
  // Support radius grows monotonically away from zero. The notch between the
  // two zero-contact shoulders makes the heart visible without changing support.
@@ -10,6 +12,6 @@
  return {angle,faceY,contact:contact.point,t,stage:t<.18?'해머 접근':t<.80?'캠을 밀어 축 회전':t<.88?'두 면에 안착 · 영점':'해머 복귀'};
  }
  const clutch=theta=>[-2+Math.cos(theta),Math.sin(theta)];
- function minuteTurns(elapsed){const n=Math.floor(elapsed/60),u=Math.max(0,Math.min(1,(elapsed%60-59)/1));return (n+u*u*(3-2*u))/30;}
- const api={minuteTurns,heart,support,resetPose,clutch,wrap,tau};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.ChronoGeometry=api;
+ function minuteTurns(elapsed){return minuteIndexing.pose(elapsed).turns/30;}
+ const api={minuteTurns,minuteIndexing,heart,support,resetPose,clutch,wrap,tau};if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.ChronoGeometry=api;
 })(typeof window!=='undefined'?window:globalThis);

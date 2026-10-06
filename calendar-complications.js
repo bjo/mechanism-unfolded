@@ -12,8 +12,8 @@ window.createCalendarComplications=function(T,root,face,views,H,hooks){
  const gmtDisplay=at(face,0,0,.49),gh=needle(gmtDisplay,2.12,purple,0,.035);const tip=new T.Shape();tip.moveTo(0,2.34);tip.lineTo(-.12,2.05);tip.lineTo(.12,2.05);tip.closePath();mesh(new T.ExtrudeGeometry(tip,{depth:.02,bevelEnabled:false}),gh,purple);
  for(let i=0;i<24;i++){const a=i*tau/24;bar(2.34*Math.sin(a),2.34*Math.cos(a),2.43*Math.sin(a),2.43*Math.cos(a),.018,gmtDisplay,purple,-.16,.015);if(i%3===0)text(String(i||24),gmtDisplay,2.24*Math.sin(a),2.24*Math.cos(a),-.13,.23,.15);}
  const moon=at(root,0,0,-.50);moon.rotation.x=Math.PI;
- const mi=gear(24,.30,moon,C.blue),dayAxis=at(moon,-.90,0),md=gear(48,.60,dayAxis,C.gold),fingerCarrier=at(md,0,0),finger=bar(0,0,0,-.69,.05,fingerCarrier,C.red,.16),moonAxis=at(moon,-.90,-1.50),mw=gear(59,.85,moonAxis,C.gold,.16);
- const moonShaft=disc(.055,.43,moonAxis,C.steel,.375);const jumper=at(moon,-1.84,-1.55,.19);bar(0,0,.16,.05,.028,jumper,C.green);
+ const mi=gear(24,.30,moon,C.blue),dayAxis=at(moon,-.90,0),md=gear(48,.60,dayAxis,C.gold),fingerCarrier=at(md,0,0),finger=bar(0,0,0,-.65,.05,fingerCarrier,C.red,.16),moonAxis=at(moon,-.90,-1.50),mw=gear(59,.85,moonAxis,C.gold,.16);
+ const moonShaft=disc(.055,.43,moonAxis,C.steel,.375);const jumper=at(moon,-1.84,-1.55,.19);bar(0,0,.12,.05,.028,jumper,C.green);
  const moonDisplay=at(face,-.90,-1.50,.14),sky=at(moonDisplay,0,0);disc(.84,.035,sky,0x263855);
  for(const x of [-.48,.48]){const m=disc(.285,.025,sky,0xe8c985,.04);m.position.x=x;}
  const maskShape=new T.Shape();maskShape.absarc(0,0,.94,0,tau,false);const aperture=new T.Path();aperture.moveTo(-.82,0);aperture.absarc(0,0,.82,Math.PI,0,true);aperture.lineTo(.805,0);aperture.absarc(.48,0,.325,0,Math.PI,false);aperture.lineTo(-.155,0);aperture.absarc(-.48,0,.325,0,Math.PI,false);aperture.closePath();maskShape.holes.push(aperture);
@@ -31,6 +31,7 @@ window.createCalendarComplications=function(T,root,face,views,H,hooks){
   g.traverse(o=>{if(o.isMesh)Object.assign(o.userData,{advancedPart:key,focusIndex:2,label:'용두 보정 · 전달 기어 → 편심 핑거 → '+(key==='gmt'?'24칸 GMT 조정 휠':'59칸 달판 조정 휠')});});
   const copy=g.clone(true);views[key].add(copy);const a=[],b=[];g.traverse(o=>a.push(o));copy.traverse(o=>b.push(o));correctionTrains[key]={g,gears,cam,pawl,index,detent,phi,a,b};
  }
+ for(const [id,a,b] of [['GMT input-relay',gi,gr],['GMT relay-output',gp,go],['moon hour-day',mi,md]])mechanismAudit.mesh(id,a,b);for(const [key,q] of Object.entries(correctionTrains))for(let i=1;i<q.gears.length;i++)mechanismAudit.mesh(key+' correction '+i,q.gears[i-1],q.gears[i]);
  const models={gmt,moon},displays={gmt:gmtDisplay,moon:moonDisplay},pairs={};
  for(const key of ['gmt','moon']){const container=views[key],a=[],b=[],model=models[key],modelCopy=model.clone(true);container.add(modelCopy);model.traverse(o=>a.push(o));modelCopy.traverse(o=>b.push(o));const dial=at(container,0,0);dial.rotation.x=Math.PI;const displayCopy=displays[key].clone(true);dial.add(displayCopy);displays[key].traverse(o=>a.push(o));displayCopy.traverse(o=>b.push(o));ring(2.8,2.78,dial,C.steel,0,.015);pairs[key]={a,b,dial};}
  const parts={gmt:[[gi],[gr,gp,go],[collar,click],[gmtDisplay]],moon:[[mi,md],[finger,mw,jumper],[moonDisplay],[moonDisplay]]};
@@ -42,7 +43,7 @@ window.createCalendarComplications=function(T,root,face,views,H,hooks){
  if(pendingCorrection){if(mode!==pendingCorrection.mode||env.crownPosition!==1)pendingCorrection=null;else {const q=pendingCorrection;if(mode==='gmt'){gmtShown=q.from+q.direction*engagement;if(progress>=.65){gmtOffset=q.from+q.direction;pendingCorrection=null;}}else{moonShown=dayCounter.value+q.from+engagement;if(progress>=.65){moonOffset=q.from+1;pendingCorrection=null;}}}}
  if(!pendingCorrection)gmtShown+=(gmtOffset-gmtShown)*Math.min(1,dt*12);
 adjustPulse=Math.max(0,adjustPulse-dt*2);const a=-lastTotal/43200*tau;gi.rotation.z=mi.rotation.z=a;gr.rotation.z=-a-Math.PI/24;gp.rotation.z=gr.rotation.z;go.rotation.z=a/2+Math.PI/16;collar.rotation.z=gh.rotation.z=M.gmtAngle(lastTotal,gmtShown);click.rotation.z=adjustPulse*Math.sin(adjustPulse*Math.PI)*.3;collar.position.z=.32+adjustPulse*.09;
- md.rotation.z=-a/2+(72*Math.PI+47*Math.PI)/48;fingerCarrier.rotation.z=-(72*Math.PI+47*Math.PI)/48;const days=dayCounter.value+moonOffset;if(!pendingCorrection)moonShown+=(days-moonShown)*Math.min(1,dt*8);mw.rotation.z=sky.rotation.z=M.moonAngle(moonShown);jumper.rotation.z=Math.sin(Math.min(1,Math.abs(days-moonShown))*Math.PI)*.12;mask.visible=!$('moonOpen')?.checked;
+ md.rotation.z=-a/2+(72*Math.PI+47*Math.PI)/48;fingerCarrier.rotation.z=-(72*Math.PI+47*Math.PI)/48+M.moonIndexing.end;const days=dayCounter.value+moonOffset;const moonPose=M.moonIndexing.pose(lastTotal,days);if(!pendingCorrection)moonShown=moonPose.turns;mw.rotation.z=Math.PI/2+Math.PI/59-.015+M.moonAngle(moonShown);sky.rotation.z=M.moonAngle(moonShown);jumper.rotation.z=Math.sin(Math.min(1,Math.abs(days-moonShown))*Math.PI)*.12;mask.visible=!$('moonOpen')?.checked;
  gmt.visible=gmtDisplay.visible=mode==='gmt';moon.visible=moonDisplay.visible=mode==='moon';
  // Show only the selected complication; each still attaches to the same base movement.
  gmt.position.z=-.25-env.explosion*1.3;moon.position.z=-.50-env.explosion*1.3;gmtTube.scale.z=(gmt.position.z-face.position.z+.49-.18)/1.01;const moonEnd=moon.position.z-face.position.z+.14;moonShaft.scale.y=(moonEnd-.16)/.43;moonShaft.position.z=(moonEnd+.16)/2;
@@ -59,7 +60,7 @@ adjustPulse=Math.max(0,adjustPulse-dt*2);const a=-lastTotal/43200*tau;gi.rotatio
  if($('moonReadout'))$('moonReadout').textContent=`모델 월령 ${M.moonAge(days).toFixed(1)}일 / 29.5일 · 달판 ${M.mod(days,59)+1} / 59칸 · 실제 오늘의 달이 아닌 교육용 기준`;
  if($('calendarStop'))$('calendarStop').disabled=hooks.environment().demoRemaining<=0;
  for(const id of ['gmtHour','moonDay','moonWeek'])if($(id))$(id).disabled=hooks.environment().demoRemaining>0;
- const host=$('advancedPanel');if(host)host.dataset.calendar=JSON.stringify({mode,total:lastTotal,gmtOffset,correctionProgress:progress,correctionEngagement:engagement,correctionVisible:correctionTrains[mode]?.g.visible,correctionGearAngles:correctionTrains[mode]?.gears.map(g=>g.rotation.z),gmtAngle:gh.rotation.z,moonDays:days,moonAngle:sky.rotation.z});
+ const host=$('advancedPanel');if(host&&mechanismAudit.enabled)host.dataset.calendarCopies=JSON.stringify(mechanismAudit.copies(Object.entries(pairs).map(([key,p])=>[key+' inspection',p.a,p.b])));if(host)host.dataset.calendar=JSON.stringify({mode,total:lastTotal,gmtOffset,correctionProgress:progress,correctionEngagement:engagement,correctionVisible:correctionTrains[mode]?.g.visible,correctionGearAngles:correctionTrains[mode]?.gears.map(g=>g.rotation.z),gmtAngle:gh.rotation.z,moonDays:days,moonEngaged:moonPose.engaged,moonProgress:moonPose.progress,moonAngle:sky.rotation.z});
  }
  return {controls,bind,tick,parts,correct(mode,direction){if(mode==='gmt'||mode==='moon'&&direction>0){pendingCorrection={mode,direction,from:mode==='gmt'?gmtOffset:moonOffset};return true;}return false;},reset(){gmtOffset=moonOffset=moonShown=lastTotal=gmtShown=0;pendingCorrection=null;dayCounter.reset();}};
 };
