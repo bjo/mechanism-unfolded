@@ -31,8 +31,8 @@ The chronograph has since been rebuilt around Seiko 6139A's vertical clutch and 
 
 ## Internal-combustion car
 
-Six interactive chapters are available: slider crank, four-stroke cycle, timing belt/cams, inline-four, air/fuel/ignition, and oil/coolant circuits. Six later powertrain/chassis chapters are explicitly planned, not released. See [the construction contract](CAR-DESIGN.md).
+Eight foundation chapters with eleven interactive experiments: crank/four-stroke, valve timing/four cylinders, air/fuel/ignition, lubrication/cooling, clutch/manual transmission, open differential, steering/suspension, and hydraulic braking/a guided drive. The engine experiments are preserved as chapter steps. Advanced modules remain a clearly labeled plan.
 
-Run `node tests/car-mechanics.cjs` and `node tests/car-systems.cjs`. Both accept a rendered snapshot JSON as an optional argument. `car.html?chapter=4&audit=1` exposes read-only `data-audit` on the canvas, derived from actual mesh transforms/vertices.
+Run `node tests/car-mechanics.cjs`, `node tests/car-systems.cjs`, and `node tests/car-foundations.cjs`. For actual Three.js assembly verification, pass the path to the official Three.js 0.160.1 CommonJS build to the last test, optionally followed by a browser snapshot JSON. `car.html?chapter=5&audit=1` exposes read-only `data-audit` on the canvas. See [CAR-FOUNDATIONS.md](CAR-FOUNDATIONS.md) for sources, constraints and explicit simplifications; [CAR-DESIGN.md](CAR-DESIGN.md) records the original engine development.
 
-The watch chapter map uses the existing curriculum catalog. Its new keyless emphasis is presentation only: it preserves positions and camera during crown switching. Setting-jumper contact geometry is explicitly omitted, not invented from a reference screenshot.
+The watch chapter map continues to use its own curriculum catalog; this release does not change watch lessons or camera controls.
