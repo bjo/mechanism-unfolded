@@ -7,6 +7,19 @@
  const rotate=([x,y],a)=>[x*Math.cos(a)-y*Math.sin(a),x*Math.sin(a)+y*Math.cos(a)];
  const add=(a,b)=>a.map((v,i)=>v+b[i]),sub=(a,b)=>a.map((v,i)=>v-b[i]),dot=(a,b)=>a[0]*b[0]+a[1]*b[1];
  const wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
+ // Contact of a straight pusher pad with a rotated, finite-width lever.
+ // Clip the lever polygon to the pad width before taking its support edge.
+ function padSupport(polygon,axis,min,max,direction){
+  let p=polygon;const across=1-axis;
+  for(const [edge,sign] of [[min,1],[max,-1]]){const out=[];for(let i=0;i<p.length;i++){
+   const a=p[i],b=p[(i+1)%p.length],inside=x=>sign*(x[across]-edge)>=0;
+   if(inside(a))out.push(a);if(inside(a)!==inside(b)){const t=(edge-a[across])/(b[across]-a[across]);out.push(add(a,sub(b,a).map(v=>v*t)));}
+  }p=out;}
+  if(!p.length)throw Error('Pusher misses lever');
+  return direction>0?Math.max(...p.map(v=>v[axis])):Math.min(...p.map(v=>v[axis]));
+ }
+ const leverPolygon=(pivot,a,from,to,width)=>[[from,-width/2],[to,-width/2],[to,width/2],[from,width/2]].map(p=>add(pivot,rotate(p,a)));
+ function resetLeverPose(hammer){const pivot=[-.65,1.80],heel=add(hammerPivot,rotate([0,.28],hammer)),v=sub(heel,pivot),angle=Math.atan2(v[1],v[0])-Math.asin((.035+.075/2)/Math.hypot(...v));return {pivot,heel,angle};}
  const Index=typeof module!=='undefined'&&module.exports?require('./indexing-motion.js'):root.IndexingMotion;
  const column=[0,1.35],firstPivot=[-1.1,.70],follower=[1.1,.26],joint=[-.85,-1.0],secondPivot=[1.1,-.5];
  const pillars=6,step=tau/12,inner=.23,outer=.36,halfWidth=.16,followerRadius=.03;
@@ -73,6 +86,6 @@
    return {column:this.column,coupling:couplingPose(this.column),hammer:phi,hearts,press,startPress,resetting:!!reset,running:this.running,elapsed:this.elapsed,input:this.input,minute:minutePose(this.elapsed),phase:this.blocked?'리셋 잠김 · 해머 걸림부가 컬럼 기둥에 닿아 움직일 수 없습니다.':reset?(t<.9?'해머 접근 · 돌출면부터 접촉':t<2.2?'두 하트캠의 영점 면에 안착':'해머 복귀 · 바늘은 영점 유지'):m?(m.t<.92?'작동 레버와 갈고리가 래칫 한 칸 전진':'버튼 복귀 · 점퍼가 컬럼 휠 위치 유지'):this.running?'결합 레버가 벌어짐 → 스프링이 클러치를 눌러 동력 전달':'결합 레버가 클러치 링을 들어 올려 동력 차단'};
   }
  }
- const api={tau,rotate,add,sub,dot,wrap,column,firstPivot,follower,joint,secondPivot,pillars,step,inner,outer,halfWidth,followerRadius,pillarGap,couplingPose,hammerPivot,hammerLug,centers,faces,heart,hammerContact,idler,minuteCenter,minuteIndex,starPoints,polygonGap,leafPoints,resetLeaf,minutePose,Controller};
+ const api={tau,rotate,add,sub,dot,wrap,padSupport,leverPolygon,resetLeverPose,column,firstPivot,follower,joint,secondPivot,pillars,step,inner,outer,halfWidth,followerRadius,pillarGap,couplingPose,hammerPivot,hammerLug,centers,faces,heart,hammerContact,idler,minuteCenter,minuteIndex,starPoints,polygonGap,leafPoints,resetLeaf,minutePose,Controller};
  if(typeof module!=='undefined'&&module.exports)module.exports=api;else root.SeikoChronograph=api;
 })(typeof window==='undefined'?globalThis:window);

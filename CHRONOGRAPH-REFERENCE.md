@@ -49,6 +49,16 @@ the separate ordinary seconds hand retained here for comparison.
 
 ## Verification scope
 
+### Axial and pusher follow-up
+
+The intermediate arbor now overlaps the lower index star rather than ending above it. The upper coupling shoe has a rigid upright web to its lever. The shoes use inferred continuous lifting profiles, with the same fixed-body transform as their lever; the lower input wheel has a stepped coaxial friction seat so that its teeth do not cut through those profiles. These dimensions and shoe contours are educational reconstructions, not traced manufacturing sections.
+
+The dished clutch spring has its inner rim against the measuring-arbor collar and its outer rim against the clutch ring. Curved return springs have explicit fixed anchors and working ends on lever surfaces. A skeleton support frame makes the otherwise omitted fixed pivot support visible. It represents the structural role of the bridge, not the outline of Seiko's actual bridge.
+
+Start and reset pushers translate along fixed, perpendicular guide axes. Their finite-width pads contact the rotated lever polygons. The reset lever calculation includes both the heel radius and lever half-width; omitting that width caused penetration. Guide bores clear the square rod diagonals.
+
+`node tests/chronograph-linkages.cjs [render-samples.json]` checks the new contact records, guide axes, intermediate shaft overlap, lifting-face clearances, and a deliberately invalid sample. These augment the earlier tests rather than replacing the source checks above.
+
 `node tests/seiko-chronograph.cjs` checks column-follower clearance through
 24 indexes, both coupling levers, the reset-blocking pillar, both pivoted-hammer
 faces over many starting angles, the spring finger's return clearance and
