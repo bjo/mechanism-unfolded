@@ -86,6 +86,7 @@ window.createCarModel=function(T,options){
  const plug=group(head,0,4.45,0);cylinder(.085,.34,plug,'spark',0,.20);cylinder(.10,.17,plug,'spark',0,-.02);cylinder(.019,.16,plug,'spark',0,-.15);box(.025,.11,.03,plug,'spark',.065,-.18);box(.07,.025,.03,plug,'spark',.03,-.228);
  const spark=mesh(new T.SphereGeometry(.075,12,8),gasGroup,null,0xffdf89);spark.position.set(0,4.22,0);spark.material.emissive.set(0xffaa22);spark.material.emissiveIntensity=2;
  const gas=mesh(new T.CylinderGeometry(.70,.70,1,48),gasGroup,null,0x3eafab);gas.material.transparent=true;gas.material.opacity=.16;gas.material.depthWrite=false;
+ const forceArrow=new T.ArrowHelper(new T.Vector3(0,-1,0),new T.Vector3(),1,0xc27e38,.16,.08);gasGroup.add(forceArrow);forceArrow.userData.annotation=true;
  const flow=[];
  for(const v of M.valves)for(const z of [-.32,.32]){
   const path=new T.CatmullRomCurve3([new T.Vector3(v.side*1.65,4.53,z),new T.Vector3(v.side*.85,4.52,z),new T.Vector3(v.seat[0]+v.n[0]*.10,v.seat[1]+v.n[1]*.10,z),new T.Vector3(v.seat[0]-v.n[0]*.17,v.seat[1]-v.n[1]*.17,z)]);
@@ -122,6 +123,7 @@ window.createCarModel=function(T,options){
   beltTeeth.forEach((m,i)=>{const p=M.belt.at(i*M.belt.pitch-M.belt.radius*latest.theta);m.position.set(p.x-.002*p.nx,p.y-.002*p.ny,S.beltZ);m.rotation.z=Math.atan2(p.ny,p.nx)-Math.PI/2;});
   const top=latest.pistonY+S.pistonTop,height=4.24-top;gas.position.y=top+height/2;gas.scale.y=height;gas.material.color.set([0x419fa3,0xbda05e,0xe47e41,0x96857a][latest.stroke]);spark.visible=latest.spark;
   if(operating){const op=M.operation(degrees,operating.pedal,operating.advance,operating.ignition);spark.visible=op.spark;gas.material.opacity=.07+.18*op.charge;if(latest.stroke===2&&!op.burned)gas.material.color.set(0x9da6a1);}
+  if(typeof CarMetrics!=='undefined'){const mp=CarMetrics.sample(degrees,operating||{}),len=Math.min(1.3,Math.abs(mp.force)/14000),positive=mp.force>=0;forceArrow.visible=chapter>=1&&len>.03;forceArrow.position.set(.30,top+(positive?len:.05),.55);forceArrow.setDirection(new T.Vector3(0,positive?-1:1,0));forceArrow.setLength(Math.max(.03,len),Math.min(.16,len*.4),.08);forceArrow.setColor(latest.stroke===2?0xc47b35:0x688991);for(const key of ['piston','rod','crank'])for(const m of partMeshes.get(key)||[]){const hot=latest.stroke===2&&(!operating||operating.ignition);m.material.emissive.set(key===selected?0x53b9ac:hot?0xb96a23:0);m.material.emissiveIntensity=key===selected?.55:hot?.23:0;}}
   flow.forEach(({bead,path,v,index})=>{const isIntake=v.id==='intake';bead.visible=isIntake?latest.stroke===0&&latest.valves[0].lift>.002:latest.stroke===3&&latest.valves[1].lift>.002;const u=M.mod(latest.degrees/85+index/9,1);bead.position.copy(path.getPoint(isIntake?u:1-u));});
  }
  function world(o,p){return root.worldToLocal(o.localToWorld(new T.Vector3(...p)));}
@@ -139,7 +141,7 @@ window.createCarModel=function(T,options){
   const pitchContacts=[];
   beltTeeth.forEach((t,i)=>{const q=M.belt.at(i*M.belt.pitch-M.belt.radius*latest.theta);if(q.circle<0)return;const c=M.belt.circles[q.circle],p=world(t,[0,.002,0]),g=pulleys[q.circle];const a=Math.atan2(p.y-c.p[1],p.x-c.p[0]);pitchContacts.push({radialError:Math.hypot(p.x-c.p[0],p.y-c.p[1])-c.r,phaseError:Math.abs(M.mod((a-g.rotation.z)*c.n/M.TAU,1)-.5),planeError:p.z-S.beltZ});});
   const shaftEnds=m=>[-1,1].map(sign=>world(m,[0,sign*m.geometry.parameters.height/2,0]).toArray());
-  return {degrees:latest.degrees,chapter,mainJournals:journals.map(shaftEnds),camShafts:cams.map(c=>shaftEnds(c.shaft)),rodLength:a.distanceTo(b),bigEndGap:a.distanceTo(cp),smallEndGap:b.distanceTo(pp),pistonAxis:pp.x,rodScale:rod.scale.toArray(),pistonScale:piston.scale.toArray(),crankScale:crank.scale.toArray(),camAngles:cams.map(c=>c.group.rotation.z),contacts,pitchContacts,beltSeamError:M.belt.length-M.belt.pitch*M.belt.teeth};
+  return {forceAnnotation:{visible:forceArrow.visible,origin:forceArrow.position.toArray(),pistonTop:latest.pistonY+S.pistonTop,direction:new T.Vector3(0,1,0).applyQuaternion(forceArrow.quaternion).toArray(),length:forceArrow.line.scale.y+forceArrow.cone.scale.y},degrees:latest.degrees,chapter,mainJournals:journals.map(shaftEnds),camShafts:cams.map(c=>shaftEnds(c.shaft)),rodLength:a.distanceTo(b),bigEndGap:a.distanceTo(cp),smallEndGap:b.distanceTo(pp),pistonAxis:pp.x,rodScale:rod.scale.toArray(),pistonScale:piston.scale.toArray(),crankScale:crank.scale.toArray(),camAngles:cams.map(c=>c.group.rotation.z),contacts,pitchContacts,beltSeamError:M.belt.length-M.belt.pitch*M.belt.teeth};
  }
  update(90);setChapter(0);
  return {root,pickable,update,setChapter,select,audit,setOperating(v){operating=v;},setBelt(v){showBelt=v&&!options.noBelt;},get selected(){return selected;}};

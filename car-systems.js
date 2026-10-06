@@ -46,11 +46,12 @@ window.createCarSystems=function(T,engine){
  oilRoute([[-.7,-.91,.6],[-.7,-.5,1.05],[0,-.32,1.05]]);
  oilRoute([[.32,0,1.05],[.8,.2,1.05],[1.65,.30,1.05]]);
  oilRoute([[1.65,-.30,1.05],[1.45,.9,-.65],[-1.22,1.0,-.65]]);
- for(const z of [-.65,.65])oilRoute([[-1.22,1,-.65],[-1.22,.4,z],[-.29,0,z]]);
- oilRoute([[-1.22,1,-.65],[-1.3,3,-.85],[-1.3,5.72,-.82],[M.valves[0].center[0],M.valves[0].center[1],-.82]]);
- oilRoute([[-1.3,5.72,-.82],[0,6.1,-.9],[M.valves[1].center[0],M.valves[1].center[1],-.82]]);
+ for(const z of [-.65,.65])oilRoute([[-1.22,1,-.65],[-1.22,.4,z],[-.168,0,z]]);
+ oilRoute([[-1.22,1,-.65],[-1.3,3,-.85],[-1.3,5.72,-.82],[M.valves[0].center[0]-.084,M.valves[0].center[1],-.82]]);
+ oilRoute([[-1.3,5.72,-.82],[0,6.1,-.9],[M.valves[1].center[0]-.084,M.valves[1].center[1],-.82]]);
  oilRoute([[M.valves[1].center[0],5.58,-.82],[1.25,4,-.9],[1.25,1,-.9],[.7,-.91,-.6]]);
  oilRoute([[-.25,-.2,.65],[-.4,-.6,.65],[-.7,-.91,.6]]);
+ const oilFilms=[];for(const z of [-.65,.65])oilFilms.push(ring(oil,'oil',.168,.004,[0,0,z]));for(const v of M.valves)oilFilms.push(ring(oil,'oil',.083,.002,[v.center[0],v.center[1],-.82]));oilFilms.forEach(m=>{m.material.emissive.set(0xe8b448);m.material.emissiveIntensity=.7;});
  // Independent coolant circuit: jacket -> radiator OR bypass -> inlet
  // thermostat mixing chamber -> pump -> jacket. No coolant enters the bore.
  const wp=g(water,1.7,1.4,1.85),rotor=g(wp);ring(wp,'pump',.24,.055,[0,0,0]);cyl(rotor,'pump',.07,.42,[0,0,0],'z');
@@ -82,18 +83,19 @@ window.createCarSystems=function(T,engine){
  const chamber=mesh(new T.CylinderGeometry(.245,.245,.80,32,1,true),therm,'thermostat');chamber.position.y=.37;chamber.material.transparent=true;chamber.material.opacity=.10;chamber.material.depthWrite=false;
  const mainPass=waterRoute('main-valve',[[2.6,1.3,1.85],[2.6,1.40,2.055],[2.6,1.58,1.85]],s=>s.cool.radiator);
  waterRoute('bypass-valve',[[2.6,2.05,1.85],[2.6,1.98,2.015],[2.6,1.58,1.85]],s=>s.cool.bypass);
- let chapter=0,settings={pedal:35,advance:8,ignition:true,temperature:60,circuit:'both'},degrees=90;
- function setChapter(n){chapter=n;engine.root.visible=n!==3;bankRoot.visible=n===3;air.visible=n===4;fluids.visible=n===5;}
- function setSettings(s){Object.assign(settings,s);oil.visible=settings.circuit!=='coolant';water.visible=settings.circuit!=='oil';engine.setOperating(chapter===4?settings:null);}
+ let chapter=0,settings={pedal:35,advance:8,ignition:true,temperature:60,circuit:'both',fluidFocus:'both'},degrees=90;
+ function setChapter(n){chapter=n;engine.root.visible=n!==3;bankRoot.visible=n===3;air.visible=n===1||n===4;fluids.visible=n===5;}
+ function setSettings(s){Object.assign(settings,s);oil.visible=settings.circuit!=='coolant';water.visible=settings.circuit!=='oil';engine.setOperating(chapter>=1?settings:null);units.forEach(u=>u.setOperating(settings));}
  function update(d){degrees=d;const op=M.operation(d,settings.pedal,settings.advance,settings.ignition),state={...op,cool:M.cooling(settings.temperature)};
   if(chapter===3)units.forEach((u,i)=>u.update(d+M.bank[i].offset));plate.rotation.z=op.opening;
   needles.forEach(n=>n.position.y=.04-(op.injection?.045:0));sprays.forEach(({route,beads})=>beads.forEach((b,i)=>{b.visible=op.injection;b.position.copy(route.curve.getPoint(M.mod(d/40+i/beads.length,1)));}));
+  jacket.material.opacity=settings.fluidFocus==='coolant'?.30:.15;jacket.material.emissive.set(settings.fluidFocus==='coolant'?0x297e78:0);jacket.material.emissiveIntensity=.25;oilFilms.forEach(m=>{m.material.emissive.set(0xe8b448);m.material.emissiveIntensity=settings.fluidFocus==='oil'?1.6:.7;});
   rotor.rotation.z=drive.rotation.z=-M.rad(d);poppets.position.y=state.cool.lift;
   traces.forEach(t=>{const flow=t.gate(state);t.route.mesh.material.opacity=flow>0?.22:.055;t.beads.forEach((b,i)=>{b.visible=flow>.001&&i<Math.ceil(flow*t.beads.length);b.position.copy(t.route.curve.getPoint(M.mod(d/220+i/t.beads.length,1)));});});
  }
  function select(key){units.forEach(u=>u.select(key));items.forEach(m=>{m.material.emissive.set(m.userData.part===key?0x53b9ac:0);m.material.emissiveIntensity=m.userData.part===key?.55:0;});}
  const point=(o,a)=>{root.updateWorldMatrix(true,true);return root.worldToLocal(o.localToWorld(new T.Vector3(...a)));};
- function audit(){const cool=M.cooling(settings.temperature);return {chapter,degrees,settings:{...settings},units:chapter===3?units.map((u,i)=>({number:i+1,z:u.root.position.z,offset:M.bank[i].offset,measurement:u.audit()})):[],throttleAngle:plate.rotation.z,throttleScale:plate.scale.toArray(),needleTravel:needles.map(n=>n.position.y),thermostat:{lift:poppets.position.y,discDistance:point(mainValve,[0,0,0]).distanceTo(point(byValve,[0,0,0])),radiator:cool.radiator,bypass:cool.bypass},waterEndpoints:waterRoutes.map(r=>({id:r.id,start:r.curve.getPoint(0).toArray(),end:r.curve.getPoint(1).toArray()})),tracers:traces.map(t=>({key:t.key,id:t.route.id||'',visible:t.beads.filter(b=>b.visible).length,point:t.beads[0].position.toArray()})),pumpAngle:rotor.rotation.z,driveAngle:drive.rotation.z};}
+ function audit(){const cool=M.cooling(settings.temperature);return {chapter,degrees,settings:{...settings},units:chapter===3?units.map((u,i)=>({number:i+1,z:u.root.position.z,offset:M.bank[i].offset,measurement:u.audit()})):[],airVisible:air.visible,oilContacts:oilFilms.map(m=>({center:point(m,[0,0,0]).toArray(),radius:m.geometry.parameters.radius,tube:m.geometry.parameters.tube})),jacket:{radius:.96,linerOuterRadius:.84,visible:water.visible},throttleAngle:plate.rotation.z,throttleScale:plate.scale.toArray(),needleTravel:needles.map(n=>n.position.y),thermostat:{lift:poppets.position.y,discDistance:point(mainValve,[0,0,0]).distanceTo(point(byValve,[0,0,0])),radiator:cool.radiator,bypass:cool.bypass},waterEndpoints:waterRoutes.map(r=>({id:r.id,start:r.curve.getPoint(0).toArray(),end:r.curve.getPoint(1).toArray()})),tracers:traces.map(t=>({key:t.key,id:t.route.id||'',visible:t.beads.filter(b=>b.visible).length,point:t.beads[0].position.toArray()})),pumpAngle:rotor.rotation.z,driveAngle:drive.rotation.z};}
  setChapter(0);setSettings({});update(90);
  return {root,pickable,setChapter,setSettings,update,select,audit,setBelt(v){units[0].setBelt(v);}};
 };

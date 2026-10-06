@@ -117,7 +117,7 @@ window.createCarVehicle=function(T){
  for(const x of [-1.12,1.12])box(whole,null,[.10,.13,7.6],[x,.93,.1]);for(const z of [-2.8,3.5])box(whole,null,[2.34,.13,.14],[0,.96,z]);box(whole,null,[2.34,.12,.16],[0,.55,-1.5]);for(const x of [-1.12,1.12])rod(whole,null,[x,.55,-1.5],[x,.93,-1.5],.045);for(const side of [-1,1])rod(whole,null,[side*.2,1.275,-2.8],[side*1.12,.96,-2.8],.055);
  shaft(propWhole,'outputShaft',[0,0,.3805],[0,0,1.96],.07);box(propWhole,'outputShaft',[.02,.03,1.5],[.069,0,1.17]);
  const roadBrakes=susp.map(s=>{const r=group(s.wheel),fixed=group(s.upright,[s.side*.22,0,0]);r.rotation.y=fixed.rotation.y=Math.PI/2;ring(r,'brakeDisc',.48,.15,.06);box(fixed,'caliper',[.25,.10,.29],[.30,.55,0]);for(const z of [-.12,.12])box(fixed,'caliper',[.25,.40,.05],[.30,.36,z]);const pads=[box(fixed,'brakePad',[.19,.23,.04],[.30,.24,-.07]),box(fixed,'brakePad',[.19,.23,.04],[.30,.24,.07])];return {r,fixed,pads};});
- let mode=6,selected='',tx=new D.Transmission(),carrier=0,splitAngle=0,wheelAngle=0,brakeSpeed=0,brakeAngle=0,journeyTime=0,settings={rack:0,bump:0,split:0,brake:0,driveStage:0},lastState={};
+ let mode=6,selected='',tx=new D.Transmission(),carrier=0,splitAngle=0,wheelAngle=0,brakeSpeed=0,brakeAngle=0,journeyTime=0,settings={rack:0,bump:0,split:0,brake:0,driveStage:0,locked:false},lastState={};
  function setMode(n){mode=n;transmission.visible=n===6||n===10;differential.visible=n===7||n===10;chassis.visible=n===8||n===10;brakes.visible=n===9;whole.visible=n===10;
   transmission.scale.setScalar(n===10?.19:.8);transmission.position.set(0,n===10?1.4:2.7,n===10?-1.0155:0);transmission.rotation.y=n===10?0:-Math.PI/2;
   differential.scale.setScalar(n===10?.62:1);differential.position.set(0,n===10?1.4:2.5,n===10?3.5:0);differential.rotation.y=n===10?Math.PI:0;
@@ -145,7 +145,7 @@ window.createCarVehicle=function(T){
   }
   tx.tick(mode===10&&!delta?0:delta?dt:tx.busy?dt:0,mode===6||mode===10?delta:0);
   let rotation=mode===7?delta/3:mode===10?-tx.outputSpeed*dt/3:0;if(mode===10&&settings.driveStage===5){const coast=delta*.42*Math.max(0,1-(journeyTime-30)/4);tx.output+=coast;tx.input+=coast/D.spec.ratios['2'];rotation=-coast/3;}
-  carrier+=rotation;splitAngle+=rotation*settings.split;wheelAngle+=mode===8?delta:mode===10?-rotation:rotation;
+  carrier+=rotation;splitAngle+=rotation*(mode===7&&settings.locked?0:settings.split);wheelAngle+=mode===8?delta:mode===10?-rotation:rotation;
   if(mode===9&&delta){const b=D.brakePose(settings.brake),sim=delta/(Math.PI/3);brakeSpeed=Math.max(0,brakeSpeed-(.015+2*b.pressure)*sim);brakeAngle+=brakeSpeed*sim;}
   update();
  }
