@@ -15,6 +15,12 @@ Use one parameter source for full-model and inspection geometry. Each part needs
 
 Read [invariants.md](references/invariants.md) for checks relevant to gears, springs, indexing, clutches, and cloned views. For numerical runs, use [snapshot-format.md](references/snapshot-format.md) and `python scripts/audit_snapshots.py snapshots.json`. The script checks supplied measurements; it does not discover meshes, perform CAD collision detection, or validate measurements by itself.
 
+## Ground the mechanism in an actual reference
+
+When the purpose is to explain a real machine, select one identified model/revision as the construction baseline before repairing its topology. Compare other designs to understand alternatives, but do not silently combine their actuator, clutch, latch and reset architectures. Map every critical body, pivot, spring, contact and layer to a service drawing, manufacturer description, patent figure or clearly observable operating sequence. Record the viewing side before assigning rotation directions. Distinguish confirmed geometry, inferred dimensions and omitted detail.
+
+A self-consistent invented mechanism is not a validated reconstruction. Formula-derived tests can prove internal consistency while preserving the original conceptual error. Require an independent source check for ratchet tooth handedness, driving/holding pawls, spring-loaded followers, interlocks and reset transmission. Do not invent replacement racks, extra gears or actuators merely because they animate easily. If evidence is insufficient, state the missing mechanism detail and leave that claim unverified; do not publish it as repaired by labeling it educational. Simplification must preserve the referenced kinematic topology and contact sequence.
+
 ## Preserve rigid-body dimensions
 
 Declare each body rigid, articulated, or deformable. For rigid bodies, measure pairwise distances between actual rendered landmarks across the entire cycle, including release and inactive phases. Check animated scale, vertex edits and reconstructed endpoints. Comparing two equally distorted views cannot prove rigidity. Never resize a finger to force contact or clearance. A sliding/folding assembly requires separate fixed-size bodies and visible joints; a spring requires a justified deformation model, not arbitrary scaling. If clearance fails, revisit geometry and contact phase.
