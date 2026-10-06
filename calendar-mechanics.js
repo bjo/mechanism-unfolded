@@ -13,6 +13,9 @@
  api.weekdayGeometry={distance:1.35,reach:.95,teeth:7,layer:.29};
  api.weekdayIndexing=Index.external({period:86400,...api.weekdayGeometry});
  api.weekdayPose=(total,turns)=>api.weekdayIndexing.pose(total,turns);
+ // UI preview of an independent weekday correction, not a contact solver
+ // for a reconstructed rotary day corrector (see CALENDAR-REFERENCE.md).
+ api.weekdayCorrectionPose=p=>{const u=Math.max(0,Math.min(1,(p-.25)/.5));return u*u*(3-2*u);};
  api.weekdayOutline=Array.from({length:7},(_,i)=>{
   const a=i*TAU/7+Math.PI/7;
   return [[.26,a-.28],[api.weekdayIndexing.radius,a-.07],[api.weekdayIndexing.radius,a],[.26,a+.10]].map(([r,t])=>[r*Math.cos(t),r*Math.sin(t)]);

@@ -7,6 +7,7 @@
  observeClock(total){const crossed=Math.floor((total+1e-7)/86400)-Math.floor((this.lastClock+1e-7)/86400);if(total>=this.lastClock&&crossed>0){this.nextDate(crossed);this.weekdayTurns+=crossed;}this.lastClock=total;}
  setWeekday(n){this.weekdayTurns=Math.floor(this.weekdayTurns/7)*7+n;}
  get weekday(){return ((this.weekdayTurns%7)+7)%7;}
+ quickWeekday(){if(!this.canQuickset()){this.lastMessage='21:00–03:00 · 날짜와 요일의 빠른 조정 잠금';return false;}this.weekdayTurns++;this.lastMessage='요일 +1 · 날짜와 시각은 유지';return true;}
  nextDate(n=1){this.date=(this.date-1+n)%31+1;this.dateTurns+=n;this.datePulse=1;}
  setDate(n){this.date=n;this.dateTurns=n-1;this.datePulse=1;}
  canQuickset(){const h=((this.lastClock%86400)+86400)%86400/3600;return h>=3&&h<21;}

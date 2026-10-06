@@ -27,7 +27,7 @@ window.createWeekdayCalendar=function(T,calendar,driver,H){
  // This visible separation is an axial stack, never an animated explosion.
  let pose=M.weekdayPose(0,0),lastRotation=NaN;
  return {star,carrier,finger,display,teeth,detent,
-  tick(total,turns){pose=M.weekdayPose(total,turns);star.rotation.z=-pose.turns*pitch;if(star.rotation.z!==lastRotation){lever.rotation.z=M.weekdayDetent(star.rotation.z).angle;lastRotation=star.rotation.z;}return pose;},
+  tick(total,turns,correction){pose=correction==null?M.weekdayPose(total,turns):{turns:turns+M.weekdayCorrectionPose(correction),engaged:false,progress:0,correctionPreview:true};star.rotation.z=-pose.turns*pitch;if(star.rotation.z!==lastRotation){lever.rotation.z=M.weekdayDetent(star.rotation.z).angle;lastRotation=star.rotation.z;}return pose;},
   measure(){
    calendar.updateWorldMatrix(true,true);
    const tip=calendar.worldToLocal(carrier.localToWorld(new T.Vector3(spec.reach,0,spec.layer-.02)));
@@ -37,7 +37,7 @@ window.createWeekdayCalendar=function(T,calendar,driver,H){
    const vertices=M.weekdayOutline.map(([x,y])=>calendar.worldToLocal(star.localToWorld(new T.Vector3(x,y,spec.layer))));
    const detentGap=Math.min(...vertices.map((p,i)=>M.segmentDistance([detentTip.x,detentTip.y],[p.x,p.y],[vertices[(i+1)%vertices.length].x,vertices[(i+1)%vertices.length].y])))-.018;
    const wrap=a=>Math.atan2(Math.sin(a),Math.cos(a));
-   return {engaged:pose.engaged,progress:pose.progress,shown:pose.turns,tip:tip.toArray(),
+   return {engaged:pose.engaged,progress:pose.progress,shown:pose.turns,correctionPreview:!!pose.correctionPreview,tip:tip.toArray(),
     fingerLength:tip.distanceTo(start),scale:finger.scale.toArray(),
     contactAngleError:pose.engaged?wrap(Math.atan2(tip.y,tip.x)-flank):null,
     starZ:teeth.position.z,driverZ:tip.z,displayZ:display.position.z,
