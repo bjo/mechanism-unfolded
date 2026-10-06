@@ -22,3 +22,9 @@ const q=M.dateCorrectionGeometry;let prior=0;for(let i=0;i<=1000;i++){const p=i/
 console.log('PASS: quickset full contact stroke and one-pitch release');
 
 for(let t=0;t<=86400;t+=10)assert.equal(M.datePose(t,0).length,M.dateGeometry.length,'rigid finger length across full cycle');
+
+const K=require('../chrono-controls.js');
+for(let i=0;i<=1000;i++){const u=i/1000,p=K.operatingPose(u);assert(Math.abs(K.distance(p.pivot,p.tooth)-K.pawlLength)<1e-9,'fixed pawl reaches ratchet flank');for(const col of [-u*K.step,-(1+u)*K.step]){const f=K.followers(col);assert(Math.abs(K.gap(K.clutchPivot,K.clutchTip,f.clutch,col))<1e-8,'clutch follower contact');assert(Math.abs(K.gap(K.brakePivot,K.brakeTip,f.brake,col))<1e-8,'brake follower contact');}}
+assert(Math.abs(K.followers(0).clutch-.24)<1e-9);assert.equal(K.followers(-K.step).clutch,0);
+for(const z of [-.34,-.46]){assert(z+.035/2<-.14,'minute finger clears return gear');assert(z+.035/2<.14,'minute finger clears heart');}
+console.log('PASS: operating pawl rigidity, column follower sweep, minute finger forbidden-layer clearance');

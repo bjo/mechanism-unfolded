@@ -19,6 +19,12 @@ Read [invariants.md](references/invariants.md) for checks relevant to gears, spr
 
 Declare each body rigid, articulated, or deformable. For rigid bodies, measure pairwise distances between actual rendered landmarks across the entire cycle, including release and inactive phases. Check animated scale, vertex edits and reconstructed endpoints. Comparing two equally distorted views cannot prove rigidity. Never resize a finger to force contact or clearance. A sliding/folding assembly requires separate fixed-size bodies and visible joints; a spring requires a justified deformation model, not arbitrary scaling. If clearance fails, revisit geometry and contact phase.
 
+## Audit causality and forbidden contact
+
+For each control, trace a complete input-to-output chain of bodies, joints, contact surfaces, latches and springs. Distinguish the control path (pusher selects a clutch) from the power path (gear train drives the hands). A button changing several independent state flags is not evidence of a mechanical connection. Show and sample the intermediate actuator and follower at press, contact, latch/index, return and blocked-input phases. Output must not change before its actuating contact or release event; include stored-energy release and overtravel accommodation explicitly. A decorative line between already animated endpoints fails this audit.
+
+Maintain both intended-contact pairs and forbidden-contact pairs. Sweep the complete motion of long arms against nearby gears, cams, shafts and bridges, including reset/retraction phases and intermediate angles, not just detents. Check axial thickness as well as planar outlines. A finger assigned to an indexing star must clear its return gear and heart cam. If clearance requires a separate working layer, model the actual arbor connecting layers and verify the same construction in every view. Do not fix a collision by transparency, draw order or disabling depth tests. Report which pairs were checked; a spur pitch audit is not a collision audit.
+
 ## Detect before diagnosing
 
 1. Reproduce the reported state with chapter, view, input position/direction, speed, time, and selected part. Keep a baseline. Include full model and inspection view, front/back/oblique perspectives, and relevant layers hidden/shown.

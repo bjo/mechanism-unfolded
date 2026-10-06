@@ -13,3 +13,5 @@ The root contains `samples`. Each sample has a unique descriptive `label` (mode,
 A complete audit needs multiple samples, not one still. Include first/mid/last contact, release, return, full-cycle boundaries, stopped state and speed changes. Exclude irrelevant checks explicitly rather than inventing placeholder zero values. The JSON output is diagnostic evidence, not a claim of full collision or physical simulation.
 
 Optional `rigidBodies` per sample: `{ "id": "date-finger", "landmarks": [[0,0,0],[1,0,0],[0,0.1,0]], "tolerance": 0.00001 }`. Supply actual rendered points including scale and deformation; preserve landmark order/units. Pairwise distances must remain constant across the complete cycle. Include inactive and release phases.
+
+Optional `forbiddenContacts`: `{ "id": "minute finger / heart cam", "gap": 0.15, "minimum": 0.02 }`. Use a conservative measured separation bound or signed closest-surface distance (negative means penetration); include thickness and the whole swept rigid body. An axial separation bound is sufficient only for separated layers, not coplanar parts. Record untested pairs separately.

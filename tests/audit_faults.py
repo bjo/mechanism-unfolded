@@ -13,3 +13,9 @@ assert m.audit(r)['passed']
 r['samples'][1]['rigidBodies'][0]['landmarks'][1]=[2,3.7,0]
 assert not m.audit(r)['passed']
 print('PASS: rigid rotation accepted; shrinking finger rejected across time')
+
+f={'samples':[{'label':'minute sweep','forbiddenContacts':[{'id':'finger / heart','gap':.12,'minimum':.02}]}]}
+assert m.audit(f)['passed']
+f['samples'][0]['forbiddenContacts'][0]['gap']=-.01
+assert not m.audit(f)['passed']
+print('PASS: forbidden surface penetration rejected')

@@ -43,6 +43,8 @@ def audit(data):
         for c in sample.get('contacts',[]):
             # Signed gap: positive separation, negative penetration. A range may allow overrun clearance.
             check(c['minGap']<=c['gap']<=c['maxGap'],label+': contact '+c['id'])
+        for c in sample.get('forbiddenContacts',[]):
+            check(math.isfinite(c['gap']) and c['gap']>=c['minimum'],label+': forbidden contact '+c['id'])
         for e in sample.get('events',[]):
             check(near(e['actual'],e['expected'],e['tolerance']),label+': event '+e['id'])
         for pair in sample.get('equivalences',[]):
