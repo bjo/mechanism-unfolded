@@ -62,3 +62,4 @@ nav{height:100dvh;max-height:100dvh;padding:24px 12px;overflow-y:auto;scrollbar-
 .brand{color:inherit;text-decoration:none}.crumb a{color:inherit;text-decoration:none}.crumb a:hover{text-decoration:underline}
 
 .model-column>.controls{grid-template-columns:1fr}.model-column .coverControl{flex-direction:row;flex-wrap:wrap;gap:12px}.learning-column #partLesson{border-top:1px solid #e0e7eb;padding-top:14px;margin-top:20px}.learning-column .parts-title{margin-top:0}
+.learning-column .chrono-explainer #seikoSection{min-width:0;width:100%;max-width:100%;overflow:hidden}.chrono-explainer #seikoSection text{font-size:23px}.chrono-explainer #seikoSection[hidden]{display:none}.chrono-explainer #seikoExplanation{font-size:13px;line-height:1.85;color:#456170;margin:12px 0}.chrono-explainer button:disabled{opacity:.5;cursor:default}

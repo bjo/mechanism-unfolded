@@ -26,8 +26,7 @@
   // Angular velocity relative to the central minute shaft, rear coordinates.
   ratios:{barrel:-1/8,center:1,third:-8,fourth:60,escape:-960,cannon:1,minute:-1/3,hour:1/12}
  };
- const chronoScale=.45,chronoAngle=-.50,cx=2*chronoScale,cy=-1.65*chronoScale;
- spec.advanced={automatic:{reduction:8},chronograph:{scale:chronoScale,angle:chronoAngle,z:2.72,measuredRadius:.020,secondsInner:.026,secondsOuter:.033,counterPoint:[cx*Math.cos(chronoAngle)-cy*Math.sin(chronoAngle),cx*Math.sin(chronoAngle)+cy*Math.cos(chronoAngle)]}};
+ spec.advanced={automatic:{reduction:8},chronograph:{counterPoint:[-1.3*.95,-.05*.95]}};
  // The oscillator uses the same simulated clock as the gear train.
  spec.balanceAngle=seconds=>Math.sin((seconds*spec.frequency%1)*Math.PI*2)*2.1;
  spec.handAngles=(seconds,offset=0)=>({minute:-(seconds+offset)/3600*Math.PI*2,hour:-(seconds+offset)/43200*Math.PI*2,second:-seconds/60*Math.PI*2});

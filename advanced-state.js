@@ -9,11 +9,8 @@
  setDate(n){this.date=n;this.dateTurns=n-1;this.datePulse=1;}
  canQuickset(){const h=((this.lastClock%86400)+86400)%86400/3600;return h>=3&&h<21;}
  quickDate(direction){if(direction<0)return false;if(!this.canQuickset()){this.lastMessage='날짜 맞물림 구간 · 이 교육 모델은 21:00–03:00 빠른 조정을 잠급니다.';return false;}this.nextDate();this.lastMessage='용두 → 날짜 조정 레버 → 날짜판 한 칸';return true;}
- toggleChrono(hasPower,setting){if(this.running){this.running=false;this.column++;return true;}if(!hasPower||setting||this.hammer>0)return false;this.running=true;this.column++;return true;}
- advance(dt){if(this.running)this.elapsed+=dt;}
- resetChrono(){if(this.running||this.hammer>0)return false;this.resetFrom=this.elapsed;this.elapsed=0;this.hammer=1;return true;}
- animate(dt){this.datePulse=Math.max(0,this.datePulse-dt*2);this.hammer=Math.max(0,this.hammer-dt/4);}
- get counters(){return {second:this.elapsed%60,minute:Math.floor(this.elapsed/60)%30,hour:(Math.floor(this.elapsed/1800)/2)%12};}
+ // Chronograph state is mirrored by advanced.js from SeikoChronograph.Controller.
+ animate(dt){this.datePulse=Math.max(0,this.datePulse-dt*2);}
  }
  if(typeof module!=='undefined'&&module.exports)module.exports=WatchAdvancedState;else root.WatchAdvancedState=WatchAdvancedState;
 })(typeof window!=='undefined'?window:globalThis);

@@ -20,10 +20,11 @@ Review and commit changes, then push to `main`. GitHub Pages deploys the reposit
 
 Apply `skills/mechanism-audit/SKILL.md` when changing mechanism geometry or motion.
 
-- `node tests/mechanics.cjs`: timing, indexing contacts, ratios, reset cams, ratchets and state boundaries.
+- `node tests/mechanics.cjs`: timing, indexing contacts, ratios, ratchets and state boundaries.
+- `node tests/seiko-chronograph.cjs`: reference-based vertical clutch, column followers, reset interlock, pivoted hammer and elastic minute-finger regressions.
 - `python tests/audit_faults.py`: verify the reusable auditor detects six deliberately injected faults.
 - Open `watch.html?lesson=1&audit=1` to enable read-only DOM diagnostics. The main canvas exposes `data-mesh-audit`, `data-timing` and `data-keyless`; `#advancedPanel` exposes contact and full/inspection copy checks. These are calculated from actual rendered gear transforms, not just the design constants.
 
 The October 2026 audit covered all 12 chapters, 39 registered spur-gear connections (40 with the chronograph clutch engaged), full/inspection transform equality, date 31-to-1, quickset direction, moon/minute indexing, automatic winding and reset interlocks. Re-run affected browser interactions after every mechanism change. Pitch-plane checks do not prove tooth-flank clearance, face-gear contact, friction, material deformation or manufacturing feasibility. Flexible fingers and quickset couplings remain explicitly simplified teaching models.
 
-The chronograph control audit additionally samples the fixed-length operating pawl and column followers through start/stop, and checks actual rendered axial bounds for the minute finger against the return gear, both hearts and the chronograph wheel. The lower indexing star is joined by an arbor to the upper return gear. Reset uses an explicitly educational rack/crank/crosshead with separately sprung, guided hammers; it is not a replica of a particular calibre. `data-forbidden-contacts` reports only these named pairs, not a whole-model collision certificate.
+The chronograph has since been rebuilt around Seiko 6139A's vertical clutch and pivoted hammer. See [the source map and verification limits](CHRONOGRAPH-REFERENCE.md). Its old horizontal clutch, rack/crank/crosshead and separate sliding hammers were removed. The earlier 39/40 connection count describes the historical audit, not the rebuilt module. `data-forbidden-contacts` reports named pairs, not a whole-model collision certificate.
