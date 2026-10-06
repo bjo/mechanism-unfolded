@@ -3,7 +3,7 @@
  class WatchAdvancedState{
  constructor(){this.reset();}
  reset(){this.weekdayTurns=0;this.date=1;this.dateTurns=0;this.datePulse=0;this.lastClock=0;this.rotor=0;this.rectified=0;this.rotorDirection=1;this.slipping=false;this.elapsed=0;this.running=false;this.column=0;this.hammer=0;this.resetFrom=0;this.lastMessage='';}
-\n rotorMove(delta,charge){this.rotor+=delta;this.rotorDirection=Math.sign(delta)||this.rotorDirection;this.rectified+=Math.abs(delta);const requested=Math.abs(delta)/(2*Math.PI)*(100/45);this.slipping=charge+requested>=100;return Math.min(100-charge,requested);}
+ rotorMove(delta,charge){this.rotor+=delta;this.rotorDirection=Math.sign(delta)||this.rotorDirection;this.rectified+=Math.abs(delta);const requested=Math.abs(delta)/(2*Math.PI)*(100/45);this.slipping=charge+requested>=100;return Math.min(100-charge,requested);}
  observeClock(total){const crossed=Math.floor((total+1e-7)/86400)-Math.floor((this.lastClock+1e-7)/86400);if(total>=this.lastClock&&crossed>0){this.nextDate(crossed);this.weekdayTurns+=crossed;}this.lastClock=total;}
  setWeekday(n){this.weekdayTurns=Math.floor(this.weekdayTurns/7)*7+n;}
  get weekday(){return ((this.weekdayTurns%7)+7)%7;}
