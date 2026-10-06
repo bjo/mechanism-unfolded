@@ -12,6 +12,7 @@
   drag(from,to,w,h){wanted=norm(mul(wanted,between(sphere(to,w,h),sphere(from,w,h))));q=wanted.slice();},
   pan(dx,dy,h){const x=rotate(q,[1,0,0]),y=rotate(q,[0,1,0]),s=radius*.63/h;target=target.map((v,i)=>v-dx*s*x[i]+dy*s*y[i]);},
   zoom(delta){wantedRadius=Math.max(5,Math.min(35,wantedRadius*Math.exp(delta*.001)));},
+  focus(point,distance){target=point.slice();wantedRadius=Math.max(5,Math.min(35,distance));},
   preset(name){if(name==='reset'){wanted=initial();target=[0,0,0];wantedRadius=13.5;}else if(name==='rear')wanted=initial();else if(name==='dial')wanted=mul(mul(axis(1,0,0,Math.PI),initial()),axis(0,0,1,Math.PI));else wanted=rotate(q,[0,0,1])[2]>=0?axis(0,0,1,Math.PI):axis(1,0,0,Math.PI);},
   update(dt){const f=1-Math.exp(-dt*14);q=blend(q,wanted,f);radius+=(wantedRadius-radius)*f;const offset=rotate(q,[0,0,radius]);return {position:offset.map((v,i)=>v+target[i]),up:rotate(q,[0,1,0]),target:target.slice(),quaternion:q.slice(),radius};},
   get state(){return {quaternion:wanted.slice(),radius:wantedRadius,target:target.slice()};}
