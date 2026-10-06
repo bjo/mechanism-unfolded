@@ -7,6 +7,26 @@
  gmt:{input:{n:24,r:.30},relay:{n:24,r:.30,p:[.60,0]},pinion:{n:12,r:.20},output:{n:24,r:.40}},
  moon:{input:{n:24,r:.30},day:{n:48,r:.60,p:[-.90,0]},disc:{n:59,r:.85,p:[-.90,-1.50]}}};
  api.moonIndexing=Index.external({period:86400,teeth:59,distance:1.50,reach:.65});
+ // Single-language teaching variant: a separate finger on the daily arbor
+ // drives the central weekday star. Not a replica of the bilingual 6139 disk.
+ api.weekdays=['월','화','수','목','금','토','일'];
+ api.weekdayGeometry={distance:1.35,reach:.95,teeth:7,layer:.29};
+ api.weekdayIndexing=Index.external({period:86400,...api.weekdayGeometry});
+ api.weekdayPose=(total,turns)=>api.weekdayIndexing.pose(total,turns);
+ api.weekdayOutline=Array.from({length:7},(_,i)=>{
+  const a=i*TAU/7+Math.PI/7;
+  return [[.26,a-.28],[api.weekdayIndexing.radius,a-.07],[api.weekdayIndexing.radius,a],[.26,a+.10]].map(([r,t])=>[r*Math.cos(t),r*Math.sin(t)]);
+ }).flat();
+ api.segmentDistance=(p,a,b)=>{const x=b[0]-a[0],y=b[1]-a[1],u=Math.max(0,Math.min(1,((p[0]-a[0])*x+(p[1]-a[1])*y)/(x*x+y*y)));return Math.hypot(p[0]-a[0]-u*x,p[1]-a[1]-u*y);};
+ api.weekdayDetent=rotation=>{
+  const c=Math.cos(rotation),s=Math.sin(rotation),v=api.weekdayOutline.map(([x,y])=>[c*x-s*y,s*x+c*y]);
+  const point=a=>[-.65+.52*Math.cos(a),-.35+.52*Math.sin(a)];
+  const clearance=a=>Math.min(...v.map((p,i)=>api.segmentDistance(point(a),p,v[(i+1)%v.length])))-.018;
+  let hi=1.8,lo=hi;
+  for(let i=1;i<=256;i++){lo=1.8-(1.8-.494)*i/256;if(clearance(lo)<=0)break;hi=lo;}
+  for(let i=0;i<32;i++){const mid=(lo+hi)/2;if(clearance(mid)<=0)lo=mid;else hi=mid;}
+  return {angle:hi,tip:point(hi),clearance:clearance(hi)};
+ };
  // Date indexing: the finger tip pushes one flank through exactly one 31-day pitch.
  const pitch=TAU/31,cx=1.35,length=1.05,half=pitch/2;
  const contactRadius=cx*Math.cos(half)+Math.sqrt(length*length-cx*cx*Math.sin(half)**2);

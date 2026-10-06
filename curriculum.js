@@ -3,7 +3,7 @@
  if(!window.watchApp){document.querySelector('nav').textContent='3D 초기화에 실패했습니다. 화면의 안내를 확인한 뒤 새로고침해 주세요.';return;}
  const lessons=[
  ['태엽 · 힘 저장',0,2],['기어열 · 움직임 전달',1,0],['탈진기 · 힘 나누기',2,0],['밸런스 · 박자 만들기',3,0],['시침·분침 · 두 속도',4,1],['용두 · 감기와 시간 맞춤',4,0,'crown'],['초침 · 동축 구조',4,2,'coax'],
- ['오토매틱 · 스스로 감기',5,0],['날짜 · 하루에 한 칸',6,0],['GMT · 두 시간대',7,0],['문페이즈 · 달의 위상',8,0],['크로노그래프 · 측정과 리셋',9,1]
+ ['오토매틱 · 스스로 감기',5,0],['날짜·요일 · 두 달력',6,0],['GMT · 두 시간대',7,0],['문페이즈 · 달의 위상',8,0],['크로노그래프 · 측정과 리셋',9,1]
  ];
  const nav=document.querySelector('nav'),$=id=>document.getElementById(id);let current=0;
  nav.replaceChildren();const brand=document.createElement('div');brand.className='course-brand';brand.innerHTML='<span>MECHANISM UNFOLDED / WATCH</span><strong>기계식 시계 탐험</strong><small>기본 7편 · 심화 5편</small>';nav.append(brand);
