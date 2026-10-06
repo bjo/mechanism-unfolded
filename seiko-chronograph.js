@@ -1,19 +1,27 @@
 /* One shared 6139A teaching assembly for mounted and inspection views. */
 window.createSeikoChronograph=function(T,scene,root,H,hooks){
- const K=SeikoChronograph,{at,disc,ring,bar,gear,needle,text,mesh,C}=H,$=id=>document.getElementById(id),ctrl=new K.Controller();
- const body=at(root,0,0,2.05);body.scale.setScalar(.95);
+ const K=SeikoChronograph,L=ChronographLayout,{at,disc,ring,bar,gear,needle,text,mesh,C}=H,$=id=>document.getElementById(id),ctrl=new K.Controller();
+ const body=at(root,0,0,2.05);body.scale.setScalar(.95);body.rotation.z=L.bodyAngle;
+
+ const rigidPlates=[];
+ function plate(g,paths,c,z=0,h=.06,pivot=.075){
+  const polys=paths.map(([a,b,w])=>L.rectangle(a,b,w));if(pivot)polys.push(L.circle(pivot));
+  const loops=L.union(polys),shapes=[];
+  for(const contour of loops){const area=contour.reduce((v,p,i)=>{const q=contour[(i+1)%contour.length];return v+p[0]*q[1]-p[1]*q[0];},0);if(area<0)continue;const shape=new T.Shape();contour.forEach(([x,y],i)=>i?shape.lineTo(x,y):shape.moveTo(x,y));shape.closePath();if(pivot){const hole=new T.Path();hole.absarc(0,0,.026,0,K.tau,true);shape.holes.push(hole);}for(const holeLoop of loops){const a=holeLoop.reduce((v,p,i)=>{const q=holeLoop[(i+1)%holeLoop.length];return v+p[0]*q[1]-p[1]*q[0];},0);if(a>=0)continue;const hole=new T.Path();holeLoop.forEach(([x,y],i)=>i?hole.lineTo(x,y):hole.moveTo(x,y));hole.closePath();shape.holes.push(hole);}shapes.push(shape);}
+  const m=mesh(new T.ExtrudeGeometry(shapes,{depth:h,bevelEnabled:false,curveSegments:24}),g,c);m.position.z=z-h/2;m.userData.plateOutline=loops[0];m.userData.plateContours=loops;rigidPlates.push({mesh:m,initial:Array.from(m.geometry.attributes.position.array)});return m;
+ }
  const input=at(body,0,0),fourth=gear(40,.54,input,C.green,-.16),inputTube=ring(.105,.070,input,C.green,-3.5,3.5);
  const frictionSeat=ring(.28,.070,input,C.green,-.09,.16);
  const output=at(body,0,0),clutch=ring(.47,.035,output,C.red,.07,.075);
  const clutchSpring=mesh(new T.BufferGeometry(),output,C.gold),springCollar=ring(.075,.035,output,C.red,.31,.025);
  // A spring disc is shown as a thin dished annulus; the ring translates axially.
- const shaft=disc(.035,4.20,output,C.red,-1.50),secondsHand=needle(output,2.2,C.red,-3.60,.025);secondsHand.rotation.x=Math.PI;
- const minute=at(body,...K.minuteCenter),minuteWheel=gear(30,.60,minute,C.gold,-.25),minuteShaft=disc(.032,4.30,minute,C.gold,-1.55),minuteHand=needle(minute,.42,C.gold,-3.70,.022);minuteHand.rotation.x=Math.PI;
+ const shaft=disc(.035,4.20,output,C.red,-1.50),secondsHand=needle(output,2.2,C.red,-3.60,.025);secondsHand.rotation.order='ZXY';secondsHand.rotation.x=Math.PI;secondsHand.rotation.z=-L.bodyAngle;
+ const minute=at(body,...K.minuteCenter),minuteWheel=gear(30,.60,minute,C.gold,-.25),minuteShaft=disc(.032,4.30,minute,C.gold,-1.55),minuteHand=needle(minute,.42,C.gold,-3.70,.022);minuteHand.rotation.order='ZXY';minuteHand.rotation.x=Math.PI;minuteHand.rotation.z=-L.bodyAngle;
  const intermediate=at(body,...K.idler),intermediateWheel=gear(10,.20,intermediate,C.blue,-.25),intermediateArbor=disc(.037,.68,intermediate,C.steel,-.12);
  const star=at(intermediate,0,0,-.48),starShape=new T.Shape();
  K.starPoints.forEach(([x,y],i)=>i?starShape.lineTo(x,y):starShape.moveTo(x,y));starShape.closePath();mesh(new T.ExtrudeGeometry(starShape,{depth:.045,bevelEnabled:false}),star,C.blue);
  const finger=at(output,0,0,-.48),fingerAngle=Math.atan2(K.idler[1],K.idler[0])+K.minuteIndex.end;
- finger.rotation.z=fingerAngle;const reach=K.minuteIndex.radius?Math.hypot(...K.idler)-.25:.5;
+ finger.rotation.z=fingerAngle;
  const fingerLeaf=mesh(new T.BufferGeometry(),finger,C.blue);disc(.055,.62,output,C.red,-.15);
  const hearts=K.centers.map((c,i)=>{const g=at(i?minute:output,0,0,.45);g.rotation.z=K.faces[i].orientation;const s=new T.Shape();K.heart.forEach(([x,y],j)=>j?s.lineTo(x,y):s.moveTo(x,y));s.closePath();mesh(new T.ExtrudeGeometry(s,{depth:.065,bevelEnabled:false}),g,C.gold);return g;});
  const column=at(body,...K.column),ratchetShape=new T.Shape(),ratchetPoints=[];
@@ -22,9 +30,9 @@ window.createSeikoChronograph=function(T,scene,root,H,hooks){
  ratchetShape.closePath();mesh(new T.ExtrudeGeometry(ratchetShape,{depth:.05,bevelEnabled:false}),column,C.gold).position.z=.70;
  for(let i=0;i<K.pillars;i++){const a=-Math.PI/2+i*K.tau/K.pillars;ring(K.outer,K.inner,column,C.blue,.85,.15,a-K.halfWidth,a+K.halfWidth);}disc(.08,.40,column,C.steel,.82);
  const first=at(body,...K.firstPivot,.87),second=at(body,...K.secondPivot,.12);
- const firstNose=[1.1,-.22],secondNose=[-1.1,.03];
- bar(0,0,...K.follower,.095,first,C.steel);bar(0,0,...firstNose,.08,first,C.steel);bar(0,0,...K.joint,.075,first,C.steel);
- const follower=disc(K.followerRadius,.09,first,C.red);follower.position.set(...K.follower,.0);
+ const firstNose=[1.1,-.22];
+ const firstPlate=plate(first,[[[0,0],K.follower,.095],[[0,0],firstNose,.08],[[0,0],K.joint,.075]],C.steel,-.07,.05);
+ const follower=disc(K.followerRadius,.17,first,C.red,-.035);follower.position.set(...K.follower,-.035);
  // Both lifting shoes are rigid cam faces on their levers. A constant-height
  // floating bar cannot support a ring while the lever withdraws sideways.
  const shoePhases=64,shoeData=[];
@@ -44,50 +52,52 @@ window.createSeikoChronograph=function(T,scene,root,H,hooks){
  const upperShoe=shoe(first,K.firstPivot,1),lowerShoe=shoe(second,K.secondPivot,-1);
  // Upright web joins the upper lever to its lower working face outside the ring.
  const shoePost=disc(.028,.72,first,C.steel,-.36);shoePost.position.set(1.1,-.13,-.36);
- bar(1.1,-.22,1.1,-.13,.06,first,C.steel);bar(1.1,-.13,1.1,-.22,.045,first,C.blue,-.73,.025);
+ bar(1.1,-.22,1.1,-.13,.06,first,C.steel,-.07);bar(1.1,-.13,1.1,-.22,.045,first,C.blue,-.73,.025);
  const jointPin=disc(.04,.86,first,C.gold,-.39);jointPin.position.x=K.joint[0];jointPin.position.y=K.joint[1];
  const joint0=K.sub(K.add(K.firstPivot,K.joint),K.secondPivot);
  const jointNormal=[-joint0[1],joint0[0]].map(v=>v/Math.hypot(...joint0)*.0775);
- bar(0,0,-.98,-.16,.085,second,C.steel);bar(-.98,-.16,-1.1,-.10,.085,second,C.steel);bar(...jointNormal,...K.add(joint0,jointNormal),.075,second,C.steel);
+ const secondPlate=plate(second,[[[0,0],[-.98,-.16],.085],[[-.98,-.16],[-1.1,-.10],.085],[jointNormal,K.add(joint0,jointNormal),.075]],C.steel);
  bar(-1.1,-.10,-1.1,.03,.035,second,C.blue,-.045,.025);const lowerPost=disc(.026,.08,second,C.steel,-.025);lowerPost.position.set(-1.1,-.10,-.025);
  // The coupling pin bears on the second lever's long contact edge.
  for(const lever of [first,second])disc(.075,.15,lever,C.gold,0);
  const hammer=at(body,...K.hammerPivot,.45);disc(.07,.12,hammer,C.steel);
- const hammerFaces=[];K.faces.forEach(f=>{const p=K.sub(f.center,K.hammerPivot),t=[-f.normal[1],f.normal[0]],q=K.add(p,f.normal.map(v=>v*.05)),elbow=K.add(p,f.normal.map(v=>v*.38));bar(0,0,...elbow,.085,hammer,C.steel,.03,.07);bar(...elbow,...q,.085,hammer,C.steel,.03,.07);hammerFaces.push(bar(p[0]-t[0]*.38+f.normal[0]*.035,p[1]-t[1]*.38+f.normal[1]*.035,p[0]+t[0]*.38+f.normal[0]*.035,p[1]+t[1]*.38+f.normal[1]*.035,.07,hammer,C.steel,.03,.07));});
- bar(0,0,...K.hammerLug,.055,hammer,C.steel,.03,.07);const lockLug=disc(.03,.44,hammer,C.red,.22);lockLug.position.x=K.hammerLug[0];lockLug.position.y=K.hammerLug[1];
+ const hammerPaths=[],hammerFaces=[];K.faces.forEach((f,index)=>{const p=K.sub(f.center,K.hammerPivot),t=[-f.normal[1],f.normal[0]],q=K.add(p,f.normal.map(v=>v*.05)),elbow=K.add(p,f.normal.map(v=>v*.38));if(index)hammerPaths.push([[0,0],[0,.8],.085],[[0,.8],[1.9,1.2],.085],[[1.9,1.2],[2.15,-.5],.085],[[2.15,-.5],elbow,.085],[elbow,q,.085]);else hammerPaths.push([[0,0],elbow,.085],[elbow,q,.085]);const a=[p[0]-t[0]*.16+f.normal[0]*.035,p[1]-t[1]*.16+f.normal[1]*.035],b=[p[0]+t[0]*.16+f.normal[0]*.035,p[1]+t[1]*.16+f.normal[1]*.035];hammerPaths.push([a,b,.07]);const surface=bar(...a,...b,.07,hammer,C.steel,.03,.07);surface.visible=false;hammerFaces.push(surface);});
+ hammerPaths.push([[0,0],K.hammerLug,.055]);const hammerPlate=plate(hammer,hammerPaths,C.steel,.03,.07);const lockLug=disc(.03,.44,hammer,C.red,.22);lockLug.position.x=K.hammerLug[0];lockLug.position.y=K.hammerLug[1];
  const heel=disc(.035,.40,hammer,C.red,.20);heel.position.x=0;heel.position.y=.28;
- const resetPivot=[-.65,1.80],resetLever=at(body,...resetPivot,.65),resetLeverArm=bar(-.55,0,.92,0,.075,resetLever,C.steel);disc(.065,.12,resetLever,C.gold);
- const operatingPivot=[.95,1.55],operating=at(body,...operatingPivot,.70);bar(0,0,.45,0,.08,operating,C.steel);const operatingArm=bar(0,0,0,.48,.09,operating,C.steel);disc(.06,.14,operating,C.gold);
+ const resetPivot=L.resetPivot,resetLever=at(body,...resetPivot,.65),resetLeverArm=plate(resetLever,[[[-.55,0],[.92,0],.075]],C.steel);disc(.065,.12,resetLever,C.gold);
+ const operatingPivot=L.operatingPivot,operating=at(body,...operatingPivot,.70);const operatingArm=plate(operating,[[[0,0],[.45,0],.08],[[0,0],L.startContact.a,.09],[L.startContact.a,L.startContact.b,L.startContact.width]],C.steel);disc(.06,.14,operating,C.gold);
  const pawl=at(body,0,0,.70);bar(0,0,.65,0,.030,pawl,C.red);disc(.03,.07,pawl,C.gold);
  const detent=at(body,-.63,1.35,.70);bar(0,0,.30,0,.025,detent,C.green);disc(.028,.06,detent,C.green);
- const minuteJumper=at(body,-2.03,-.02,-.25);bar(0,0,.12,0,.025,minuteJumper,C.green);disc(.028,.08,minuteJumper,C.green);
+ const minuteJumper=at(body,K.minuteCenter[0]-.73,K.minuteCenter[1]+.03,-.25);bar(0,0,.12,0,.025,minuteJumper,C.green);disc(.028,.08,minuteJumper,C.green);
  // Spring anchors belong to the fixed bridge; their working ends follow the
  // corresponding lever surface. Curves illustrate bending, not spring stress.
  const springs=[
-  {lever:first,point:[.20,-.04],points:[[-1.55,.8],[-1.52,1.06],[-1.30,1.1]],z:.912},
-  {lever:operating,point:[0,.25],points:[[.92,1.48],[1.15,1.42],[1.20,1.72]],z:.742},
+  {lever:first,point:[.20,-.04],points:[[-1.55,.8],[-1.52,1.06],[-1.30,1.1]],z:.837},
+  {lever:operating,point:[.20,.04],points:[[.92,1.48],[1.15,1.42],[1.20,1.72]],z:.742},
   {lever:hammer,point:[.15,.095],points:[[-.86,.88],[-1.04,1.15],[-.94,1.3]],z:.527},
   {lever:detent,point:[.15,0],points:[[-.62,1.05],[-.68,1.25],[-.55,1.35]],z:.742}
  ];
  for(const s of springs){s.mesh=mesh(new T.BufferGeometry(),body,C.gold);const anchor=at(body,...s.points[0],s.z);disc(.028,.035,anchor,C.steel);}
  const support=at(body,0,0);ring(2.16,2.13,support,C.steel,-.70,.035);
- const supportLocations=[[...K.column,.70],[...K.firstPivot,.87],[...K.secondPivot,.12],[...K.hammerPivot,.45],[...operatingPivot,.70],[...resetPivot,.65],[-.63,1.35,.70],[-2.03,-.02,-.25],...springs.map(s=>[...s.points[0],s.z])];
+ const supportLocations=[[...K.column,.70],[...K.firstPivot,.87],[...K.secondPivot,.12],[...K.hammerPivot,.45],[...operatingPivot,.70],[...resetPivot,.65],[-.63,1.35,.70],[K.minuteCenter[0]-.73,K.minuteCenter[1]+.03,-.25],...springs.map(s=>[...s.points[0],s.z])];
  for(const [x,y,z] of supportLocations){const a=at(support,x,y),r=Math.hypot(x,y);disc(.022,z+.70,a,C.steel,(z-.70)/2);bar(x,y,x/r*2.145,y/r*2.145,.035,support,C.steel,-.682,.025);}
- const pushers=[at(body,.60,2.55,.70),at(body,-.65,2.34,.65)],pusherPads=[],pusherRods=[],pusherGuides=[];
- pushers.forEach((g,i)=>{pusherRods.push(bar(0,-.55,0,0,.06,g,C.steel));pusherPads.push(bar(-.13,-.55,.13,-.55,.04,g,C.steel));const cap=disc(.15,.22,g,C.steel);cap.rotation.x=0;g.traverse(o=>{if(o.isMesh)Object.assign(o.userData,{chronoAction:i?'reset':'toggle',label:i?'리셋 푸셔 → 복귀 레버 → 회전 해머':'시작·정지 푸셔 → 작동 레버 → 컬럼 휠'});});});pushers[1].rotation.z=Math.PI/2;
- // Fixed guides identify the slider axes; the caps translate, never swivel.
- for(const [x,y,z,a] of [[.60,1.62,.70,Math.PI/2],[-.99,2.34,.65,0]]){const sleeve=ring(.085,.045,body,C.steel,0,.18);sleeve.quaternion.setFromUnitVectors(new T.Vector3(0,0,1),new T.Vector3(Math.cos(a),Math.sin(a),0));sleeve.position.set(x,y,z);pusherGuides.push(sleeve);const sx=x+.09*Math.cos(a),sy=y+.09*Math.sin(a),mount=at(support,sx,sy);disc(.028,z+.615,mount,C.steel,(z-.785)/2);const r=Math.hypot(sx,sy);bar(sx,sy,sx/r*2.145,sy/r*2.145,.04,support,C.steel,-.682,.025);}
+ const pushers=L.pushers.map(q=>at(body,q.x,3.3,q.z)),pusherPads=[],pusherRods=[],pusherGuides=[];
+ pushers.forEach((g,i)=>{const q=L.pushers[i];pusherRods.push(bar(0,-q.rod,0,0,.06,g,C.steel));pusherPads.push(bar(-.13,-q.rod,.13,-q.rod,.04,g,C.steel));const cap=disc(.15,.22,g,C.steel);cap.rotation.x=0;g.traverse(o=>{if(o.isMesh)Object.assign(o.userData,{chronoAction:i?'reset':'toggle',label:i?'리셋 푸셔 → 복귀 레버 → 해머':'시작·정지 푸셔 → 작동 레버 → 컬럼 휠'});});});
+ // Both rods slide toward the centre on parallel axes, beside the crown.
+ for(const q of L.pushers){const sleeve=ring(.085,.045,body,C.steel,0,.16);sleeve.rotation.x=-Math.PI/2;sleeve.position.set(q.x,q.guideY,q.z);pusherGuides.push(sleeve);const mount=at(support,q.x,q.guideY+.08);disc(.028,q.z+.615,mount,C.steel,(q.z-.785)/2);const r=Math.hypot(q.x,q.guideY+.08);bar(q.x,q.guideY+.08,q.x/r*2.145,(q.guideY+.08)/r*2.145,.06,support,C.steel,-.682,.025);}
+ // Fixed bridge supports use a quieter opaque finish than moving steel levers.
+ support.traverse(o=>{if(o.isMesh){o.material.color.set(0xc4cbd3);o.material.metalness=.12;o.material.roughness=.65;}});
  const dial=at(body,0,0,-3.65);ring(2.45,2.41,dial,C.steel,0,.02);for(let i=0;i<12;i++){const a=i*K.tau/12;bar(2.26*Math.sin(a),2.26*Math.cos(a),2.39*Math.sin(a),2.39*Math.cos(a),.024,dial,C.steel);}
- const counterDial=at(dial,...K.minuteCenter);ring(.48,.46,counterDial,C.steel);text('30 MIN',counterDial,0,-.20,-.06,.48,.10).rotation.y=Math.PI;
+ const counterDial=at(dial,...K.minuteCenter);ring(.48,.46,counterDial,C.steel);const counterLabel=text('30 MIN',counterDial,.20,0,-.06,.48,.10);counterLabel.rotation.order='ZYX';counterLabel.rotation.y=Math.PI;counterLabel.rotation.z=-L.bodyAngle;
  const sets=[[input],[column,first,second,operating,pawl],[minute,intermediate,finger],[hammer,resetLever,...hearts]];
  const names=['4번 휠과 수직 클러치','컬럼 휠과 두 결합 레버','손가락 · 중간 휠 · 30분 누적계','복귀 레버 · 회전 해머 · 두 하트캠'];
  sets.forEach((set,i)=>set.forEach(g=>g.traverse(o=>{if(o.isMesh)Object.assign(o.userData,{advancedPart:'chronograph',focusIndex:i,label:names[i]});})));
  // Single topology, exact local-pose copy including all hands, shafts and pushers.
  const inspection=body.clone(true);scene.add(inspection);inspection.position.set(0,0,.8);inspection.scale.setScalar(1.1);
- const originals=[],copies=[];body.traverse(o=>originals.push(o));inspection.traverse(o=>copies.push(o));
+ const originals=[],copies=[];body.traverse(o=>originals.push(o));inspection.traverse(o=>copies.push(o));const crownSource=hooks.crownReference(),inspectionCrown=crownSource.clone(true);inspection.add(inspectionCrown);
  const targets=pushers.map((g,i)=>{const b=document.createElement('button');b.className='chrono-pusher-target';b.setAttribute('aria-label',i?'3D 리셋 푸셔':'3D 시작·정지 푸셔');b.title=i?'리셋 · 측정 중에는 잠김':'시작 / 정지';b.onclick=()=>i?ctrl.resetPress():ctrl.toggle(hooks.environment().charge>0&&hooks.environment().crown!==2);document.querySelector('.stage').append(b);return b;});
  mechanismAudit.mesh('6139 intermediate-minute',intermediateWheel,minuteWheel);
- let panel,explain,paused=false,detail='clutch';
+ let panel,explain,paused=false,detail='clutch',auditCache={},auditKey='';
  function renderedAudit(){
   body.updateWorldMatrix(true,true);
   function axial(o){let lo=Infinity,hi=-Infinity;o.traverse(m=>{if(!m.geometry)return;const v=m.geometry.attributes.position;for(let i=0;i<v.count;i++){const p=body.worldToLocal(m.localToWorld(new T.Vector3().fromBufferAttribute(v,i)));lo=Math.min(lo,p.z);hi=Math.max(hi,p.z);}});return [lo,hi];}
@@ -95,10 +105,10 @@ window.createSeikoChronograph=function(T,scene,root,H,hooks){
   const gaps=hearts.map((g,i)=>{const face=hammerFaces[i],p=face.localToWorld(new T.Vector3(0,.035,0)),normal=new T.Vector3(0,1,0).transformDirection(face.matrixWorld),cam=g.children[0],v=cam.geometry.attributes.position;let gap=Infinity;for(let j=0;j<v.count;j++)gap=Math.min(gap,cam.localToWorld(new T.Vector3().fromBufferAttribute(v,j)).sub(p).dot(normal));return gap/.95;});
   const fixedLengths=[hammer,first,second,pawl].map(g=>{const m=g.children.find(o=>o.geometry?.parameters?.width);return m?m.localToWorld(new T.Vector3(m.geometry.parameters.width/2,0,0)).distanceTo(m.localToWorld(new T.Vector3(-m.geometry.parameters.width/2,0,0)))/.95:0;});
   const points=o=>{const a=o.geometry.attributes.position,out=[];for(let i=0;i<a.count;i++)out.push(body.worldToLocal(o.localToWorld(new T.Vector3().fromBufferAttribute(a,i))));return out;};
-  const outline=o=>{const w=o.geometry.parameters.width/2,h=o.geometry.parameters.height/2;return [[-w,-h],[w,-h],[w,h],[-w,h]].map(([x,y])=>{const p=body.worldToLocal(o.localToWorld(new T.Vector3(x,y,0)));return [p.x,p.y];});};
+  const outline=o=>{if(o.userData.plateOutline)return o.userData.plateOutline.map(([x,y])=>{const p=body.worldToLocal(o.localToWorld(new T.Vector3(x,y,0)));return [p.x,p.y];});const w=o.geometry.parameters.width/2,h=o.geometry.parameters.height/2;return [[-w,-h],[w,-h],[w,h],[-w,h]].map(([x,y])=>{const p=body.worldToLocal(o.localToWorld(new T.Vector3(x,y,0)));return [p.x,p.y];});};
   const startPad=outline(pusherPads[0]),resetPad=outline(pusherPads[1]),startLever=outline(operatingArm),resetArm=outline(resetLeverArm);
   const startGap=Math.min(...startPad.map(p=>p[1]))-K.padSupport(startLever,1,Math.min(...startPad.map(p=>p[0])),Math.max(...startPad.map(p=>p[0])),1);
-  const resetGap=K.padSupport(resetArm,0,Math.min(...resetPad.map(p=>p[1])),Math.max(...resetPad.map(p=>p[1])),-1)-Math.max(...resetPad.map(p=>p[0]));
+  const resetGap=Math.min(...resetPad.map(p=>p[1]))-K.padSupport(resetArm,1,Math.min(...resetPad.map(p=>p[0])),Math.max(...resetPad.map(p=>p[0])),1);
   const heelPoint=body.worldToLocal(heel.localToWorld(new T.Vector3())),heelGap=K.polygonGap([heelPoint.x,heelPoint.y],resetArm)-.035;
   const springPoints=points(clutchSpring),springOuter=Math.min(...springPoints.filter(p=>Math.hypot(p.x,p.y)>.33).map(p=>p.z));
   const camContact=shoeData.map(s=>{const v=points(s.mesh),angle=s.lever.rotation.z;let i=0;while(i<s.samples.length-2&&s.samples[i+1].angle<angle)i++;const a=s.samples[i],b=s.samples[i+1],u=Math.max(0,Math.min(1,(angle-a.angle)/(b.angle-a.angle))),q=v[a.index].clone().lerp(v[b.index],u);const beneath=v.filter(p=>Math.hypot(p.x,p.y)<.470001&&Math.hypot(p.x,p.y)>.035);return {heightGap:q.z-clutch.position.z,radiusGap:Math.hypot(q.x,q.y)-.47,penetration:Math.max(...beneath.map(p=>p.z-clutch.position.z)),inputSeatClearance:Math.min(...v.filter(p=>p.z<.07).map(p=>Math.hypot(p.x,p.y)-.28))};});
@@ -106,9 +116,15 @@ window.createSeikoChronograph=function(T,scene,root,H,hooks){
   const pusherAxes=pushers.map(g=>{const p=body.worldToLocal(g.localToWorld(new T.Vector3(0,1,0))),o=body.worldToLocal(g.localToWorld(new T.Vector3()));return p.sub(o).normalize();});
   const guides=pusherGuides.map((g,i)=>{const o=body.worldToLocal(g.localToWorld(new T.Vector3())),a=body.worldToLocal(g.localToWorld(new T.Vector3(0,0,1))).sub(o).normalize(),rod=points(pusherRods[i]).map(p=>p.dot(a)),bearing=points(g).map(p=>p.dot(a));return {alignment:Math.abs(a.dot(pusherAxes[i])),rodMargins:[Math.min(...bearing)-Math.min(...rod),Math.max(...rod)-Math.max(...bearing)],radialClearance:.045-Math.hypot(.03,.03)};});
   const connections={startPusherGap:startGap,resetPusherGap:resetGap,resetHeelGap:heelGap,indexArborOverlap:Math.min(arbor[1],indexLayer[1])-Math.max(arbor[0],indexLayer[0]),springRingGap:springOuter-(clutch.position.z+.075),camContact,guides,pusherAxes:pusherAxes.map(a=>a.toArray())};
-  return {layers,heartGaps:gaps,fixedLengths,connections,forbiddenContacts:[{id:'finger-transfer',gap:layers.transfer[0]-layers.finger[1],minimum:.02},{id:'finger-heart',gap:layers.hearts[0]-layers.finger[1],minimum:.02}]};
+  const plateRigidity=rigidPlates.map(({mesh:m,initial})=>({vertices:m.geometry.attributes.position.array.length,unchanged:initial.every((v,i)=>v===m.geometry.attributes.position.array[i]),scale:m.scale.toArray()}));
+  const casePushers=pushers.map(g=>root.worldToLocal(g.localToWorld(new T.Vector3())).toArray());
+  const handDirections=[secondsHand,minuteHand].map(g=>root.worldToLocal(g.localToWorld(new T.Vector3(0,1,0))).sub(root.worldToLocal(g.localToWorld(new T.Vector3()))).normalize().toArray());
+  const caseAxes=pushers.map(g=>root.worldToLocal(g.localToWorld(new T.Vector3(0,1,0))).sub(root.worldToLocal(g.localToWorld(new T.Vector3()))).normalize().toArray());
+  const minutePoint=root.worldToLocal(minute.localToWorld(new T.Vector3())),barrel=WatchSpec.wheels.barrel,minuteBarrelGap=Math.hypot(minutePoint.x-barrel.p[0],minutePoint.y-barrel.p[1])-barrel.r-.032*.95;
+  const counterTrainGaps=Object.entries(WatchSpec.wheels).filter(([k])=>k!=='barrel').map(([id,w])=>({id,gap:Math.hypot(minutePoint.x-w.p[0],minutePoint.y-w.p[1])-w.r-.032*.95}));
+  const hammerBodyGaps=hearts.map(g=>{const m=g.children[0],v=m.geometry.attributes.position;if(!m.userData.auditVertices){const unique=new Map();for(let i=0;i<v.count;i++)unique.set(v.getX(i)+','+v.getY(i),i);m.userData.auditVertices=[...unique.values()];}let gap=Infinity;for(const i of m.userData.auditVertices){const p=hammerPlate.worldToLocal(m.localToWorld(new T.Vector3().fromBufferAttribute(v,i))),q=[p.x,p.y],ds=hammerPlate.userData.plateContours.map(poly=>K.polygonGap(q,poly)),inside=ds.filter(d=>d<0).length%2;gap=Math.min(gap,(inside?-1:1)*Math.min(...ds.map(Math.abs)));}return gap;});
+  return {layers,heartGaps:gaps,fixedLengths,connections,plateRigidity,casePushers,caseAxes,handDirections,minuteBarrelGap,counterTrainGaps,hammerBodyGaps,forbiddenContacts:[{id:'finger-transfer',gap:layers.transfer[0]-layers.finger[1],minimum:.02},{id:'finger-heart',gap:layers.hearts[0]-layers.finger[1],minimum:.02}]};
  }
- function circleIntersection(p,r,q,s){const d=Math.hypot(...K.sub(q,p)),a=(r*r-s*s+d*d)/(2*d),h=Math.sqrt(Math.max(0,r*r-a*a)),v=K.sub(q,p).map(x=>x/d);return [p[0]+a*v[0]+h*v[1],p[1]+a*v[1]-h*v[0]];}
  function holdingPawl(angle){const polygon=ratchetPoints.map(p=>K.add(K.column,K.rotate(p,angle))),pivot=[-.63,1.35],candidates=[];
   for(let i=0;i<polygon.length;i++){const a=polygon[i],v=K.sub(polygon[(i+1)%polygon.length],a),d=K.sub(a,pivot),aa=K.dot(v,v),bb=2*K.dot(d,v),cc=K.dot(d,d)-.30**2,det=bb*bb-4*aa*cc;if(aa<1e-12||det<0)continue;
    for(const t of [(-bb+Math.sqrt(det))/(2*aa),(-bb-Math.sqrt(det))/(2*aa)])if(t>=0&&t<=1){const p=K.sub(K.add(a,v.map(x=>x*t)),pivot),direction=Math.atan2(p[1],p[0]);if(direction>=0)candidates.push(direction);}}
@@ -116,18 +132,17 @@ window.createSeikoChronograph=function(T,scene,root,H,hooks){
  }
  function controlPose(p){
   const m=ctrl.motion,u=m?Math.min(1,Math.max(0,(m.t-.12)/.8)):0,back=m&&m.t>.92;
-  const pressure=back?Math.max(0,(1.5-m.t)/.58):u,a=.1-K.step*pressure;
-  const tip=K.add(K.column,[.43*Math.cos(a),.43*Math.sin(a)]),joint=circleIntersection(operatingPivot,.45,tip,.65);
-  const angle=Math.atan2(joint[1]-operatingPivot[1],joint[0]-operatingPivot[0]);
+  const pressure=back?Math.max(0,(1.5-m.t)/.58):u;
+  const start=L.startPose(pressure),{tip,joint,angle}=start;
   operating.rotation.z=angle;pawl.position.set(...joint,.70);pawl.rotation.z=Math.atan2(tip[1]-joint[1],tip[0]-joint[0])+(back?Math.sin((1-pressure)*Math.PI)*.20:0);
-  const startPolygon=K.leverPolygon(operatingPivot,angle+Math.PI/2,0,.48,.09),startEdge=K.padSupport(startPolygon,1,.47,.73,1);pushers[0].position.set(.60,startEdge+.57,.70);
-  const resetPose=K.resetLeverPose(p.hammer),heelPoint=resetPose.heel,ra=resetPose.angle;resetLever.rotation.z=ra;
-  const resetPolygon=K.leverPolygon(resetPivot,ra,-.55,.92,.075),resetEdge=K.padSupport(resetPolygon,0,2.21,2.47,-1);pushers[1].position.set(resetEdge-.57,2.34,.65);
+  const startEdge=start.edge;pushers[0].position.set(L.pushers[0].x,startEdge+L.pushers[0].rod+.02,.70);
+  const resetPose=L.resetPose(p.hammer),heelPoint=resetPose.heel,ra=resetPose.angle;resetLever.rotation.z=ra;
+  const resetEdge=resetPose.edge;pushers[1].position.set(L.pushers[1].x,resetEdge+L.pushers[1].rod+.02,.65);
   return {pawlLength:Math.hypot(...K.sub(tip,joint)),resetContact:heelPoint,startPusher:pushers[0].position.toArray(),resetPusher:pushers[1].position.toArray(),startEdge,resetEdge,resetAngle:ra,startAngle:angle};
  }
  function attach(host){
-  panel=host;explain=document.createElement('section');explain.className='chrono-explainer';host.append(explain);
-  explain.innerHTML=`<h3>실제 구조를 따라: Seiko 6139A</h3><p>컬럼 휠 · 수직 클러치 · 30분 누적계. 정비 도면의 연결 관계를 재구성했습니다. 부품 크기와 간격은 관찰을 위해 확대했습니다.</p><div class="chrono-tabs"><button data-seiko="clutch" aria-pressed="true">① 시작·정지</button><button data-seiko="minute">② 분 넘김</button><button data-seiko="reset">③ 영점 복귀</button></div><output id="seikoPhase" aria-live="polite"></output><div id="seikoExplanation"></div><svg id="seikoSection" viewBox="0 0 620 210" role="img" aria-label="동축 수직 클러치 단면: 녹색 입력 휠과 빨간 클러치 링의 접촉"><path d="M310 35V190" stroke="#d45451" stroke-width="10"/><rect x="180" y="133" width="260" height="20" fill="#19896c"/><g id="seikoSectionRing"><path d="M190 121H430" stroke="#d45451" stroke-width="16"/></g><path id="seikoSectionSpring" d="M250 113L310 75L370 113" fill="none" stroke="#bc9148" stroke-width="4"/><path id="seikoSectionLevers" d="M95 113H200 M420 113H525" stroke="#168ab4" stroke-width="10"/><text x="15" y="35" font-size="17" fill="#254357">위: 스프링이 누름</text><text x="350" y="190" font-size="17" fill="#254357">아래: 계속 도는 4번 휠</text></svg><div class="chrono-actions"><button id="seikoResetDemo">1분 17초에서 리셋 관찰</button><button id="seikoPause">입력 동작 일시 정지</button><button id="seikoStep">입력 동작 한 단계</button></div><p><a href="https://seikoserviceusa.com/uploads/datasheets/6139A.pdf" target="_blank" rel="noopener noreferrer">Seiko 정비 안내서 · 인쇄면 3–10쪽, 그림 6–24 ↗</a></p><details><summary>이 모델의 범위와 실제 시계와의 차이</summary><p>6139A의 제어·클러치·리셋 연결을 기준으로 합니다. 기본 챕터의 시계 전체를 6139A로 복제한 것은 아닙니다. 기존 1분 회전축을 이 모듈의 입력으로 연결했습니다. 실제 6139A에는 별도의 일반 초침이 없으며, 이 사이트의 녹색 일반 초침은 입력과 측정 시간을 비교하는 교육용 표시입니다. 기둥 수·치수·축 간격·스프링 형상은 확대 모형의 설계값입니다. 파란 리프트 작동면과 회색 지지 프레임도 접촉·지지 관계를 드러내기 위한 재구성입니다. 두 푸셔는 고정된 가이드 안에서 직선으로만 움직입니다. 접촉 운동을 설명하는 모델이며 토크·탄성·공차를 계산하는 제작용 CAD는 아닙니다.</p></details>`;
+  panel=host;if(mechanismAudit.enabled){const contours=hearts.map(g=>{const v=g.children[0].geometry.attributes.position,points=new Map();for(let i=0;i<v.count;i++)points.set(v.getX(i)+','+v.getY(i),[v.getX(i),v.getY(i)]);return [...points.values()];});panel.dataset.chronoGeometry=JSON.stringify({hammer:hammerPlate.userData.plateContours,hearts:contours,centers:K.centers,pivot:K.hammerPivot,orientations:hearts.map(g=>g.rotation.z),faceHalfWidth:.16});}explain=document.createElement('section');explain.className='chrono-explainer';host.append(explain);
+  explain.innerHTML=`<h3>실제 구조를 따라: Seiko 6139A</h3><p>컬럼 휠 · 수직 클러치 · 30분 누적계. 정비 도면의 연결 관계를 재구성했습니다. 부품 크기와 간격은 관찰을 위해 확대했습니다. 확대에서도 용두를 기준으로 위아래 푸셔를 비교할 수 있습니다. 푸셔는 안내관 안에서 직선 이동하고, 판형 레버는 고정 축을 중심으로 회전합니다.</p><div class="chrono-tabs"><button data-seiko="clutch" aria-pressed="true">① 시작·정지</button><button data-seiko="minute">② 분 넘김</button><button data-seiko="reset">③ 영점 복귀</button></div><output id="seikoPhase" aria-live="polite"></output><div id="seikoExplanation"></div><svg id="seikoSection" viewBox="0 0 620 210" role="img" aria-label="동축 수직 클러치 단면: 녹색 입력 휠과 빨간 클러치 링의 접촉"><path d="M310 35V190" stroke="#d45451" stroke-width="10"/><rect x="180" y="133" width="260" height="20" fill="#19896c"/><g id="seikoSectionRing"><path d="M190 121H430" stroke="#d45451" stroke-width="16"/></g><path id="seikoSectionSpring" d="M250 113L310 75L370 113" fill="none" stroke="#bc9148" stroke-width="4"/><path id="seikoSectionLevers" d="M95 113H200 M420 113H525" stroke="#168ab4" stroke-width="10"/><text x="15" y="35" font-size="17" fill="#254357">위: 스프링이 누름</text><text x="350" y="190" font-size="17" fill="#254357">아래: 계속 도는 4번 휠</text></svg><div class="chrono-actions"><button id="seikoResetDemo">1분 17초에서 리셋 관찰</button><button id="seikoPause">입력 동작 일시 정지</button><button id="seikoStep">입력 동작 한 단계</button></div><p><a href="https://seikoserviceusa.com/uploads/datasheets/6139A.pdf" target="_blank" rel="noopener noreferrer">Seiko 정비 안내서 · 인쇄면 3–10쪽, 그림 6–24 ↗</a></p><details><summary>이 모델의 범위와 실제 시계와의 차이</summary><p>6139A의 제어·클러치·리셋 연결을 기준으로 합니다. 기본 챕터의 시계 전체를 6139A로 복제한 것은 아닙니다. 기존 1분 회전축을 이 모듈의 입력으로 연결했습니다. 실제 6139A에는 별도의 일반 초침이 없으며, 이 사이트의 녹색 일반 초침은 입력과 측정 시간을 비교하는 교육용 표시입니다. 기둥 수·치수·축 간격·스프링 형상은 확대 모형의 설계값입니다. 파란 리프트 작동면과 회색 지지 프레임도 접촉·지지 관계를 드러내기 위한 재구성입니다. 두 푸셔는 고정된 가이드 안에서 직선으로만 움직입니다. 접촉 운동을 설명하는 모델이며 토크·탄성·공차를 계산하는 제작용 CAD는 아닙니다.</p></details>`;
   explain.querySelectorAll('[data-seiko]').forEach(b=>b.onclick=()=>{detail=b.dataset.seiko;explain.querySelectorAll('[data-seiko]').forEach(x=>x.setAttribute('aria-pressed',x===b));updateText();});
   $('seikoResetDemo').onclick=()=>{if(ctrl.running||ctrl.motion||ctrl.resetMotion)return;ctrl.column=0;ctrl.elapsed=77;ctrl.resetPress();paused=false;};
   $('seikoPause').onclick=()=>{paused=!paused;$('seikoPause').textContent=paused?'입력 동작 재개':'입력 동작 일시 정지';};$('seikoStep').onclick=()=>{paused=true;const before=ctrl.running;ctrl.tick(.08);if(!before&&ctrl.running)hooks.run();$('seikoPause').textContent='입력 동작 재개';};updateText();
@@ -152,9 +167,10 @@ window.createSeikoChronograph=function(T,scene,root,H,hooks){
   for(const s of springs){if(s.angle===s.lever.rotation.z)continue;s.angle=s.lever.rotation.z;const end=K.add([s.lever.position.x,s.lever.position.y],K.rotate(s.point,s.angle)),points=[...s.points,end].map(([x,y])=>new T.Vector3(x,y,s.z));s.mesh.geometry.dispose();s.mesh.geometry=new T.TubeGeometry(new T.CatmullRomCurve3(points),32,.012,6,false);s.end=points.at(-1);}
   const controlsOnly=!!$('chronoControlOnly')?.checked;dial.visible=(isolated||!!$('chronoXray')?.checked)&&!controlsOnly;for(const o of [inputTube,shaft,minuteShaft,secondsHand,minuteHand])o.visible=!controlsOnly;
   for(let i=1;i<originals.length;i++){const a=originals[i],b=copies[i];b.position.copy(a.position);b.quaternion.copy(a.quaternion);b.scale.copy(a.scale);b.visible=a.visible;if(a.isMesh){b.geometry=a.geometry;b.material=a.material;b.userData={...a.userData};}}
+  crownSource.updateWorldMatrix(true,false);body.updateWorldMatrix(true,false);const relativeCrown=new T.Matrix4().copy(body.matrixWorld).invert().multiply(crownSource.matrixWorld);relativeCrown.decompose(inspectionCrown.position,inspectionCrown.quaternion,inspectionCrown.scale);
   pushers.forEach((g,i)=>{const o=isolated?copies[originals.indexOf(g)]:g,pt=hooks.project(o),b=targets[i];b.hidden=!visible||!pt.visible;b.style.left=pt.x+'px';b.style.top=pt.y+'px';});
   if(explain){explain.hidden=!visible;$('seikoPhase').textContent=p.phase;$('seikoSectionRing').setAttribute('transform',`translate(0 ${-p.coupling.lift*240})`);$('seikoSectionSpring').setAttribute('d',`M250 ${113-p.coupling.lift*240}L310 75L370 ${113-p.coupling.lift*240}`);$('seikoSectionLevers').setAttribute('d',`M95 ${129-p.coupling.lift*240}H${200-25*p.coupling.first/.15} M${420+25*p.coupling.first/.15} ${129-p.coupling.lift*240}H525`);$('seikoResetDemo').disabled=ctrl.running||!!ctrl.motion||!!ctrl.resetMotion;}
-  if(panel){const audit=mechanismAudit.enabled?renderedAudit():{},out={baseline:'Seiko 6139A',...p,...audit,leaf:{bend:leaf.bend,gap:leaf.gap},control,copyErrors:mechanismAudit.enabled?mechanismAudit.copies([['6139 mounted/inspection',originals,copies,1]]):[],rigidScales:[hammer,first,second,pawl].map(o=>o.scale.toArray()),shaftAngles:[output.rotation.z,minute.rotation.z],isolated};panel.dataset.chrono=JSON.stringify(out);if(audit.forbiddenContacts)panel.dataset.forbiddenContacts=JSON.stringify(audit.forbiddenContacts);}
+  if(panel){if(mechanismAudit.enabled){const key=[p.column,p.hammer,p.startPress,...p.hearts.map(h=>h.angle),leaf.bend].join(',');if(key!==auditKey){auditCache=renderedAudit();auditKey=key;}}const audit=auditCache,out={baseline:'Seiko 6139A',...p,...audit,leaf:{bend:leaf.bend,gap:leaf.gap},control,copyErrors:mechanismAudit.enabled?mechanismAudit.copies([['6139 mounted/inspection',originals,copies,1]]):[],rigidScales:[hammer,first,second,pawl].map(o=>o.scale.toArray()),shaftAngles:[output.rotation.z,minute.rotation.z],isolated};panel.dataset.chrono=JSON.stringify(out);if(audit.forbiddenContacts)panel.dataset.forbiddenContacts=JSON.stringify(audit.forbiddenContacts);}
   return p;
  }
  return {ctrl,parts:sets,names,attach,tick,press(action){return action==='toggle'?ctrl.toggle(hooks.environment().charge>0&&hooks.environment().crown!==2):ctrl.resetPress();},advance:dt=>ctrl.advance(dt),reset:()=>{ctrl.reset();paused=false;},get elapsed(){return ctrl.elapsed;},get running(){return ctrl.running;}};

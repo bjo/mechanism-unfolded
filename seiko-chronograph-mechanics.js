@@ -44,7 +44,7 @@
  }
  // Two fixed flat hammer faces on ONE pivoting body. Each heart is solved
  // against its transformed face, rather than moving a hammer to follow a cam.
- const hammerPivot=[-.80,.85],hammerLug=[.8074369636693477,.5121507206974394],centers=[[0,0],[-1.3,-.05]],heart=[];
+ const hammerPivot=[-.80,.85],hammerLug=[.8074369636693477,.5121507206974394],centers=[[0,0],[.78,.90]],heart=[];
  for(let i=0;i<=240;i++){const t=-Math.PI+i*tau/240;if(i===120){heart.push([-.09,.15],[0,.075],[.09,.15]);continue;}const h=.15+.18*Math.sin(Math.abs(t)/2),dh=.09*Math.cos(t/2)*Math.sign(t);heart.push([h*Math.sin(t)+dh*Math.cos(t),h*Math.cos(t)-dh*Math.sin(t)]);}
  const faces=centers.map(c=>{const d=sub(c,hammerPivot),l=Math.hypot(...d),normal=[d[1]/l,-d[0]/l],center=add(c,normal.map(v=>v*.15));return {center,normal,orientation:Math.atan2(normal[1],normal[0])-Math.PI/2};});
  function support(a){return Math.max(...heart.map(p=>rotate(p,a)[1]));}
@@ -54,7 +54,7 @@
   if(support(relative)>distance){let lo=0,hi=Math.PI;for(let i=0;i<35;i++){const m=(lo+hi)/2;if(support(m)<=distance)lo=m;else hi=m;}angle=phi+Math.sign(relative)*lo;}
   return {angle,gap:distance-support(angle-phi),face:p,normal:n};
  }
- const minuteCenter=centers[1],idler=[-.65,-.05-Math.sqrt(.8*.8-.65*.65)],minuteIndex=Index.external({period:60,teeth:10,distance:Math.hypot(...idler),reach:Math.hypot(...idler)-.25});
+ const minuteCenter=centers[1],counterDistance=Math.hypot(...minuteCenter),counterHeight=Math.sqrt(.8**2-(counterDistance/2)**2),idler=[minuteCenter[0]/2+minuteCenter[1]/counterDistance*counterHeight,minuteCenter[1]/2-minuteCenter[0]/counterDistance*counterHeight],minuteIndex=Index.external({period:60,teeth:10,distance:Math.hypot(...idler),reach:Math.hypot(...idler)-.25});
  const starPoints=[];for(let i=0;i<10;i++)for(const [f,r] of [[0,minuteIndex.radius*.72],[0,minuteIndex.radius+.018],[.78,minuteIndex.radius*.72]]){const a=(i+f)*tau/10;starPoints.push([r*Math.cos(a),r*Math.sin(a)]);}
  function polygonGap(p,polygon){let inside=false,gap=Infinity;for(let i=0,j=polygon.length-1;i<polygon.length;j=i++){
   const a=polygon[j],b=polygon[i],v=sub(b,a),t=clamp(dot(sub(p,a),v)/dot(v,v),0,1);gap=Math.min(gap,Math.hypot(...sub(p,add(a,v.map(x=>x*t)))));

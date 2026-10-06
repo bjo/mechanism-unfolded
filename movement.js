@@ -172,7 +172,7 @@ function selectAdvanced(mode){keylessPresentation.set(false);if(step<4)setStep(4
 }
 advanced=createAdvancedWatch(T,scene,root,face,S,{
  project:obj=>{obj.updateWorldMatrix(true,false);const v=obj.getWorldPosition(new T.Vector3()).project(camera),r=canvas.getBoundingClientRect(),s=stage.getBoundingClientRect();return {x:(v.x+1)*r.width/2+r.left-s.left,y:(1-v.y)*r.height/2+r.top-s.top,visible:v.z>=-1&&v.z<=1&&Math.abs(v.x)<1&&Math.abs(v.y)<1};},
- selectorWheel:keylessWorks.parts.transferWheel,view:selectAdvanced,crown:setCrownPosition,turnCrown,correctionSources:()=>[crown,slidingClutch,selectorLever,...keylessWorks.sources],environment:()=>({charge,crown:crownPosition,seated:CrownTransition.seated(crownPull,crownPosition),rate,chapter:courseChapter,demoRemaining:handDemoLeft}),presentation:advancedPresentation,focus:advancedFocus,
+ crownReference:()=>crown,selectorWheel:keylessWorks.parts.transferWheel,view:selectAdvanced,crown:setCrownPosition,turnCrown,correctionSources:()=>[crown,slidingClutch,selectorLever,...keylessWorks.sources],environment:()=>({charge,crown:crownPosition,seated:CrownTransition.seated(crownPull,crownPosition),rate,chapter:courseChapter,demoRemaining:handDemoLeft}),presentation:advancedPresentation,focus:advancedFocus,
  addWind:amount=>{if(amount>0&&advanced?.mode==='automatic')automaticWindPulse=.08;charge=Math.min(100,charge+amount);windAngle+=amount/100*TAU*5.625;sync();},
  wind:()=>{setCrownPosition(0);$('wind').click();},
  run:()=>{if(step<4){const savedCharge=charge;setStep(4);charge=savedCharge;}setCrownPosition(0);playing=true;timeExperiment=false;handDemoLeft=0;rate=1;sync();},

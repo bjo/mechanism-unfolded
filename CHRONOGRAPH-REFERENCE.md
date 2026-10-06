@@ -55,7 +55,37 @@ The intermediate arbor now overlaps the lower index star rather than ending abov
 
 The dished clutch spring has its inner rim against the measuring-arbor collar and its outer rim against the clutch ring. Curved return springs have explicit fixed anchors and working ends on lever surfaces. A skeleton support frame makes the otherwise omitted fixed pivot support visible. It represents the structural role of the bridge, not the outline of Seiko's actual bridge.
 
-Start and reset pushers translate along fixed, perpendicular guide axes. Their finite-width pads contact the rotated lever polygons. The reset lever calculation includes both the heel radius and lever half-width; omitting that width caused penetration. Guide bores clear the square rod diagonals.
+Start and reset pushers now translate along parallel case-side guide axes, with
+the crown between them. The former perpendicular arrangement was an integration
+error: internally consistent pad contacts did not establish correct placement
+relative to the watch case. Both mounted and inspection assemblies use the same
+orientation; the inspection includes a transform-matched copy of the real crown.
+Their finite-width pads contact the rotated lever polygons. The reset lever
+calculation includes both the heel radius and lever half-width; omitting that
+width caused penetration. Guide bores clear the square rod diagonals and retain
+the rods throughout the stroke.
+
+### Case layout and rigid-body cleanup
+
+`chronograph-layout.js` separates fixed case layout and contact calculations from
+rendering. The operating, reset, coupling and hammer bodies are single extruded
+union outlines, with fixed thickness and pivot bores. Overlapping box seams are
+removed. Only the defined springs deform; plate vertices and unit scales are
+checked through the input cycle. The first coupling plate is below its working
+follower level so its body does not substitute for the pillar contact.
+
+Rotating the control layout required relocating the minute counter and its
+intermediate wheel: its shaft must clear the base watch's barrel and going train.
+The counter remains driven through the same intermediate wheel and one rigid
+arbor to its heart and hand. Hand orientation is compensated separately so zero
+does not rotate with the module. These locations and stamped outlines are fitted
+teaching geometry, not the factory's 6139A counter placement or dimensions.
+
+The hammer's connecting arm routes outside both heart envelopes. Overwide faces
+were reduced to the measured required contact footprint. Tests sweep exported
+rendered hammer/heart contours over 2,050 angle combinations, check the finite
+pad width, and retain the live stroke contact checks. A flat-face gap alone had
+missed collisions with the connecting arm and with the other hammer pad.
 
 `node tests/chronograph-linkages.cjs [render-samples.json]` checks the new contact records, guide axes, intermediate shaft overlap, lifting-face clearances, and a deliberately invalid sample. These augment the earlier tests rather than replacing the source checks above.
 
