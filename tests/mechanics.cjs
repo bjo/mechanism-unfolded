@@ -20,3 +20,5 @@ const cr=new A();assert(cr.toggleChrono(true,false));cr.advance(77);assert(!cr.r
 console.log('PASS: moon/chronograph contact windows, ratchet contact sweep, cam reset sweep, clutch separation, crown positions, automatic input directions, chrono interlocks');
 const q=M.dateCorrectionGeometry;let prior=0;for(let i=0;i<=1000;i++){const p=i/1000,v=M.dateCorrectionPose(p);assert(v>=prior-1e-10&&v<=1);if(v>0&&v<1){const phi=(p-.5)*2*Math.PI;const alpha=Math.atan2(q.reach*Math.sin(phi),q.distance+q.reach*Math.cos(phi));assert(Math.abs(alpha-(v-.5)*2*Math.PI/31)<1e-10);}prior=v;}assert.equal(prior,1);assert.equal(M.dateCorrectionPose(q.endProgress),1);
 console.log('PASS: quickset full contact stroke and one-pitch release');
+
+for(let t=0;t<=86400;t+=10)assert.equal(M.datePose(t,0).length,M.dateGeometry.length,'rigid finger length across full cycle');

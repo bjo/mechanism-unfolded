@@ -15,6 +15,10 @@ Use one parameter source for full-model and inspection geometry. Each part needs
 
 Read [invariants.md](references/invariants.md) for checks relevant to gears, springs, indexing, clutches, and cloned views. For numerical runs, use [snapshot-format.md](references/snapshot-format.md) and `python scripts/audit_snapshots.py snapshots.json`. The script checks supplied measurements; it does not discover meshes, perform CAD collision detection, or validate measurements by itself.
 
+## Preserve rigid-body dimensions
+
+Declare each body rigid, articulated, or deformable. For rigid bodies, measure pairwise distances between actual rendered landmarks across the entire cycle, including release and inactive phases. Check animated scale, vertex edits and reconstructed endpoints. Comparing two equally distorted views cannot prove rigidity. Never resize a finger to force contact or clearance. A sliding/folding assembly requires separate fixed-size bodies and visible joints; a spring requires a justified deformation model, not arbitrary scaling. If clearance fails, revisit geometry and contact phase.
+
 ## Detect before diagnosing
 
 1. Reproduce the reported state with chapter, view, input position/direction, speed, time, and selected part. Keep a baseline. Include full model and inspection view, front/back/oblique perspectives, and relevant layers hidden/shown.

@@ -14,6 +14,7 @@ def audit(data):
     def near(a,b,t): return abs(a-b)<=t
     samples=data['samples']
     if not samples: raise ValueError('At least one measured sample is required')
+    rigid_baselines={}
     for sample in samples:
         label=sample['label']; parts={p['id']:p for p in sample.get('parts',[])}
         if len(parts)!=len(sample.get('parts',[])): raise ValueError('Duplicate part ID: '+label)
@@ -21,6 +22,12 @@ def audit(data):
             for key in ('center','axis'):
                 if len(p[key])!=3 or not all(math.isfinite(x) for x in p[key]): raise ValueError('Invalid '+key)
             check(near(length(p['axis']),1,1e-6),label+': unit axis '+p['id'])
+        for body in sample.get('rigidBodies',[]):
+            points=body['landmarks']; ident=body['id']; tol=body['tolerance']
+            if len(points)<2: raise ValueError('Rigid body requires at least two landmarks')
+            distances=[length(sub(a,b)) for i,a in enumerate(points) for b in points[i+1:]]
+            base=rigid_baselines.setdefault(ident,distances)
+            check(len(base)==len(distances) and all(near(a,b,tol) for a,b in zip(base,distances)),label+': rigid dimensions '+ident)
         for link in sample.get('meshes',[]):
             a,b=parts[link['a']],parts[link['b']]; tag=label+': '+a['id']+' / '+b['id']; kind=link.get('type','external')
             if kind not in ('external','internal'): raise ValueError('Unsupported mesh type: '+kind)

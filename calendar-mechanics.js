@@ -18,9 +18,8 @@
   const engaged=day>86400-2*end/TAU*86400;
   const alpha=Math.atan2(length*Math.sin(wrapped),cx+length*Math.cos(wrapped));
   const progress=engaged?Math.max(0,Math.min(1,(alpha+half)/pitch)):0;
-  // Flexible finger retracts toward its carrier outside the driving sector.
-  const extension=engaged?1:Math.max(0,1-Math.max(0,wrapped-end)/.06);
-  return {angle:a,engaged,progress,turns:turns+progress,length:engaged?length:(wrapped>=end&&wrapped<end+.06?length-.16*(1-extension):length-.16)};
+  // A rigid finger clears the tooth sector by rotation; never resize it to force contact.
+  return {angle:a,engaged,progress,turns:turns+progress,length};
  };
  // Quickset uses a separate rotary finger and a four-wheel transfer train.
  const qr=2.36,ql=.60,qhalf=Math.PI/31,qd=qr*Math.cos(qhalf)-Math.sqrt(ql*ql-qr*qr*Math.sin(qhalf)**2),qend=Math.atan2(qr*Math.sin(qhalf),qr*Math.cos(qhalf)-qd),qgamma=-2*TAU/31;

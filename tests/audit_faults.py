@@ -7,3 +7,9 @@ mutations=[lambda q:q['parts'][1]['center'].__setitem__(0,3.2),lambda q:q['parts
 for mutation in mutations:
  bad=copy.deepcopy(s);mutation(bad['samples'][0]);assert not m.audit(bad)['passed']
 print('PASS: auditor accepts valid geometry and rejects six injected gap, plane, velocity, contact, event and view faults')
+
+r={'samples':[{'label':'rest','rigidBodies':[{'id':'finger','landmarks':[[0,0,0],[1,0,0],[0,.1,0]],'tolerance':1e-8}]},{'label':'rotated','rigidBodies':[{'id':'finger','landmarks':[[2,3,0],[2,4,0],[1.9,3,0]],'tolerance':1e-8}]}]}
+assert m.audit(r)['passed']
+r['samples'][1]['rigidBodies'][0]['landmarks'][1]=[2,3.7,0]
+assert not m.audit(r)['passed']
+print('PASS: rigid rotation accepted; shrinking finger rejected across time')
