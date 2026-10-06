@@ -50,4 +50,38 @@ their entire construction or for a moon-phase quickset.
 9. Mounted and enlarged views use the same parts and state. Crown selection
    never moves the camera.
 
-Status: reference established; full SW220-1 reconstruction is not yet verified.
+## Implemented teaching assembly
+
+The shared assembly now includes the stem groove, setting lever and contact pin,
+rigid yoke/shoe, square-bore sliding pinion with two working ends, separate
+winding pinion, flexible detent jumper, return spring, and a pivoted correction
+selector. Its moving setting wheel selects the correction output or the shaft
+leading to the existing minute wheel. Mounted and inspection views share these
+bodies. Crown input is held until the selected position is seated.
+
+The guide rails on the setting lever are an explicitly **unverified educational
+contact profile**, fitted to this site's existing output locations. They are not
+a traced SW220-1 cam or a verified reconstruction of its corrector-lever contact.
+Likewise the widened layout, gear counts, winding face dogs and spring outlines
+are not manufacturer dimensions. The UI links the original drawing and states
+these limits. This release improves the visible connections; it does not close
+the manufacturer-profile verification item above. In particular the existing
+weekday reverse correction remains a display demonstration with its downstream
+corrector omitted, as stated in the calendar lesson.
+
+## Verification
+
+- `node tests/keyless.cjs`: 4,001 selection poses, 101 overrun poses, 12 injected
+  faults. Rigid lengths, groove retention, output pitch clearance and contact.
+- `node tests/keyless.cjs <rendered-snapshots.json>` checks actual rendered yoke,
+  setting lever and carrier landmarks; stem-groove alignment; guide, jumper and
+  return-spring contact; and unit scales. Browser samples include both directions.
+- Existing crown-transition, calendar, weekday and chronograph tests remain
+  required. Mesh diagnostics cover pitch distance, axial overlap and module;
+  they do not certify tooth-flank conjugacy or whole-model collision freedom.
+- The winding idler is supported from above to avoid a floor pillar passing
+  through the barrel. The setting-lever body is above its yoke contact layer;
+  the pin, rather than the lever body, reaches the working surface.
+
+Status: connected educational assembly implemented; exact SW220-1 cam profiles,
+full tooth contact and the downstream weekday corrector remain unverified.

@@ -1,5 +1,6 @@
 /* Educational train, inspired by SW210 layout. Not manufacturer dimensions. */
 (function(root){
+ const KM=typeof module!=='undefined'&&module.exports?require('./keyless-mechanics.js'):root.KeylessMechanics;
  const polar=(origin,d,a)=>[origin[0]+d*Math.cos(a),origin[1]+d*Math.sin(a)];
  const center=[0,0],barrel=[.50,Math.sqrt(1.485**2-.50**2)];
  const third=polar(center,1.02+.1275,170*Math.PI/180);
@@ -31,10 +32,10 @@
  spec.balanceAngle=seconds=>Math.sin((seconds*spec.frequency%1)*Math.PI*2)*2.1;
  spec.handAngles=(seconds,offset=0)=>({minute:-(seconds+offset)/3600*Math.PI*2,hour:-(seconds+offset)/43200*Math.PI*2,second:-seconds/60*Math.PI*2});
  // External winding train, with an intermediate wheel. All pitch circles share one module.
- const k=spec.keyless;k.winding={p:[2.05,0],idlerR:k.crownR*32/34};
+ const k=spec.keyless;k.setting.p=KM.timeOutput;k.setting.n=25;k.setting.r=.48*25/36;k.date.p=KM.datePoint;k.date.r=KM.outputR;k.setting.topR=KM.outputR;k.yokePivot=KM.yokePivot;k.yokeLength=KM.yokeLength;k.winding={p:[KM.windingPinX-k.crownR,0],idlerR:k.crownR*32/34};
  const a=k.winding.p,b=barrel,dx=b[0]-a[0],dy=b[1]-a[1],d=Math.hypot(dx,dy),ra=k.crownR+k.winding.idlerR,rb=k.ratchetR+k.winding.idlerR,l=(ra*ra-rb*rb+d*d)/(2*d),h=Math.sqrt(ra*ra-l*l);
  k.winding.idler=[a[0]+l*dx/d+h*dy/d,a[1]+l*dy/d-h*dx/d];
- k.sliderX=[a[0]+k.crownR-.20,k.date.p[0]-k.date.r,k.setting.p[0]-k.setting.topR];
+ k.sliderX=KM.sliderX.slice();
  k.yokePose=x=>({angle:Math.atan2(-Math.sqrt(k.yokeLength**2-(x-k.yokePivot[0])**2),x-k.yokePivot[0]),length:k.yokeLength});
  spec.crownAction=(position,direction)=>position===2?{windPercent:0,settingSeconds:direction*300}:position===1?{windPercent:0,settingSeconds:0}:{windPercent:direction>0?25:0,settingSeconds:0};
  spec.forkAngle=function(angle){const e=this.escapement,d=Math.hypot(.05-escape[0],-1.96-escape[1])-e.pivotDistance;return Math.max(-e.swing,Math.min(e.swing,-Math.atan2(e.rollerRadius*Math.sin(angle),d-e.rollerRadius*Math.cos(angle))));};

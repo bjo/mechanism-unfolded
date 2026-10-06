@@ -19,12 +19,12 @@ window.createCalendarComplications=function(T,root,face,views,H,hooks){
  const maskShape=new T.Shape();maskShape.absarc(0,0,.94,0,tau,false);const aperture=new T.Path();aperture.moveTo(-.82,0);aperture.absarc(0,0,.82,Math.PI,0,true);aperture.lineTo(.805,0);aperture.absarc(.48,0,.325,0,Math.PI,false);aperture.lineTo(-.155,0);aperture.absarc(-.48,0,.325,0,Math.PI,false);aperture.closePath();maskShape.holes.push(aperture);
  const mask=mesh(new T.ExtrudeGeometry(maskShape,{depth:.025,bevelEnabled:false}),moonDisplay,C.pale);mask.position.z=.08;
  text('MOON PHASE',moonDisplay,0,-.36,.12,1.10,.12);
- // Crown-driven correction trains share the real selector arbor at (2, 0).
+ // Crown-driven correction trains share the selector arbor defined by the keyless assembly.
  // An eccentric finger indexes the output instead of back-driving the going train.
- const correctionTrains={};
+ const correctionTrains={},origin=KeylessMechanics.datePoint;
  for(const [key,x,y,r,n] of [['gmt',0,0,.24,24],['moon',-.90,1.50,.85,59]]){
-  const g=at(root,0,0,-.90),end=[x+r+.21,y],distance=Math.hypot(end[0]-2,end[1]),pitch=distance/6,phi=Math.atan2(end[1],end[0]-2),gears=[];
-  for(let i=0;i<4;i++){const a=at(g,2+(end[0]-2)*i/3,end[1]*i/3);gears.push(gear(20,pitch,a,C.blue));disc(.035,.12,a,C.steel,-.02);}
+  const g=at(root,0,0,-.90),end=[x+r+.21,y],distance=Math.hypot(end[0]-origin[0],end[1]-origin[1]),pitch=distance/6,phi=Math.atan2(end[1]-origin[1],end[0]-origin[0]),gears=[];
+  for(let i=0;i<4;i++){const a=at(g,origin[0]+(end[0]-origin[0])*i/3,origin[1]+(end[1]-origin[1])*i/3);gears.push(gear(20,pitch,a,C.blue));disc(.035,.12,a,C.steel,-.02);}
   const cam=at(g,...end,.12);disc(.08,.055,cam,C.red);const pawl=bar(0,0,-.23,0,.045,cam,C.red,.04,.04);
   const target=at(g,x,y,.16),index=gear(n,r,target,key==='gmt'?purple:C.gold);disc(.04,key==='gmt'?.34:.24,target,C.steel,.10);
   const detent=at(g,x-r-.10,y,.20);bar(0,.13,.10,0,.028,detent,C.green);
