@@ -194,7 +194,7 @@ advanced=createAdvancedWatch(T,scene,root,face,S,{
 },toothShape);
 
 setStep(0);sync();readings();$('loading').remove();requestAnimationFrame(frame);window.insideLab={getState:()=>({step,seconds,beats,charge,playing,view,centerAngle:seconds/3600*TAU,hourAngle:-(seconds+handOffset)/43200*TAU,crownPosition,handOffset,settingLeft})};
-window.watchApp={setStep,resetCrown:()=>setCrownPosition(0),focus:i=>document.getElementById('journeySteps').children[i]?.click(),crown:setCrownMode,coax:setCoaxMode};
+window.watchApp={setStep,resetCrown:()=>{pendingDate=pendingWeekday=false;freeTurnLeft=correctionTravel=dateInputAngle=0;setCrownPosition(0);},focus:i=>document.getElementById('journeySteps').children[i]?.click(),crown:setCrownMode,coax:setCoaxMode};
 }catch(e){if($('loading'))$('loading').textContent=e.message;console.error(e);}
 })();
 
