@@ -1,3 +1,4 @@
+global.CarRoad=require('../car-road');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),D=require('../car-drivetrain');
 const near=(a,b,e=1e-6)=>assert(Math.abs(a-b)<e,`${a} != ${b}`),distance=(a,b)=>Math.hypot(...a.map((v,i)=>v-b[i]));
 function validate(s){
@@ -23,7 +24,7 @@ assert.equal(overlapCount,0,'spur tooth penetration');assert(overlap(20,40,Math.
 if(process.argv[2]){
  const T=require(path.resolve(process.argv[2]));global.window=global;global.CarDrive=D;eval(fs.readFileSync(path.join(__dirname,'../car-vehicle.js'),'utf8'));const model=createCarVehicle(T);let count=0;
  for(const mode of [6,7,8,9,10]){model.setMode(mode);for(let k=0;k<=100;k++){model.setSettings({rack:.16*Math.sin(k/100*D.TAU),bump:-.25+.57*k/100,split:-1+2*k/100,brake:k/100});model.tick(.02,.02);const s=model.audit();validate(s);count++;}}
- model.setMode(10);for(let i=0;i<1801;i++){model.tick(.02,.02*Math.PI/3);if(i%20===0){const s=model.audit();validate(s);const w=s.wholeConnection;near(w.output,-w.carrier*3);near(w.output,w.propAngle);assert(distance(w.gearboxEnd,w.propStart)<.011);assert(distance(w.propEnd,w.pinionEnd)<.011);}if(i===1000)assert.equal(model.state.transmission.gear,'2');}near(model.state.journeyTime,36);
+ model.setMode(10);for(let i=0;i<1801;i++){model.tick(.02,.02*Math.PI/3);if(i%20===0){const s=model.audit();validate(s);const w=s.wholeConnection;near(w.output,-w.carrier*3);near(w.output,w.propAngle);assert(distance(w.gearboxEnd,w.propStart)<.011);assert(distance(w.propEnd,w.pinionEnd)<.011);}}assert(model.state.journeyTime>35);
  const good=model.audit();for(const bad of [s=>s.rigid[0].scale[0]=1.1,s=>s.gearMeshes[0].distance+=.1,s=>s.steeringLinks[0].joints[0][0]+=.1,s=>s.padGaps[0]=-.1,s=>s.diffAngles[0]+=.2]){const sample=structuredClone(good);bad(sample);assert.throws(()=>validate(sample));}
  console.log(`PASS ${count} actual Three.js assembly poses; 5 geometry faults rejected`);
 }

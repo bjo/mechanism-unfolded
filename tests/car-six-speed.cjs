@@ -1,3 +1,4 @@
+global.CarRoad=require('../car-road');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),D=require('../car-drivetrain');
 const near=(a,b,e=1e-6)=>assert(Math.abs(a-b)<e,`${a} != ${b}`),dist=(a,b)=>Math.hypot(...a.map((x,i)=>x-b[i]));
 function validate(s){s=s.vehicle||s;const q=s.six;assert(q);q.forkErrors.forEach(x=>near(x,0));q.headErrors.forEach(x=>near(x,0));assert(q.sleeves.filter(x=>Math.abs(x)>1e-5).length<=1,'two gears locked at once');q.forkPadGaps.forEach(x=>near(x,0));

@@ -6,6 +6,7 @@
  let chapter=0,selected='piston',model,systems,renderer,scene,camera,last=0,lastUI=0,lastAudit=0,lastDegree=NaN;
  const settings={pedal:35,advance:8,ignition:true,temperature:60,circuit:'both',rpm:1500,fluidFocus:'both'};
  const learning=createCarLearning();
+ const driveUI=createCarDriveUI(()=>vehicle,()=>{clock.running=true;updateUI();},()=>updateUI());
  const audits=new URL(location.href).searchParams.get('audit')==='1';
  L.chapters.forEach((c,i)=>{const b=document.createElement('button');b.innerHTML=`<b>${String(i+1).padStart(2,'0')}</b><span>${c.title}</span>`;b.dataset.chapter=i+1;b.onclick=()=>selectChapter(i);$('chapterNav').append(b);});
  L.roadmap.forEach(([title,path,experiment],i)=>{const ready=true,a=document.createElement('article');a.className='roadmap-card'+(ready?' ready':'');a.id='roadmap-'+(i+1);a.innerHTML=`<span>${String(i+1).padStart(2,'0')} / ${ready?'지금 탐구하기':'제작 예정'}</span><h3>${title}</h3><b>${path}</b><p>${experiment}</p>${ready?`<a href="car.html?chapter=${i+1}">작업대 열기 ↗</a>`:''}`;$('roadmapCards').append(a);});
@@ -25,11 +26,12 @@
   if(i>=3&&i<=5)$('modelScope').textContent=['4기통은 공통 축에 연결됩니다 · 행정 버튼은 1번 기준 · 전체/4기통 보기로 넓게 관찰하세요.','슬라이더는 스로틀 축 입력을 대신합니다 · 분사 펄스와 공기량은 교육용 표시이며 ECU 맵이 아닙니다.','통로를 펼쳐 그린 유로도 · 부품의 실제 장착 배치·압력·유량·열수지 계산은 아닙니다.'][i-3];
   document.querySelector('.edition').innerHTML=i===3?'FOUR CYLINDERS · ONE CRANK<br>1 → 3 → 4 → 2':'CONNECTED CUTAWAY<br>DOHC · 4 VALVES / CYLINDER';
   model?.setChapter(Math.min(i,5));systems?.setChapter(Math.min(i,5));if(model&&i>=6)model.root.visible=false;if(systems)systems.root.visible=i<6;vehicle?.setMode(i);if(vehicle)vehicle.root.visible=i>=6;systems?.setSettings(settings);model?.update(clock.degrees);systems?.update(clock.degrees);selectPart(parts.includes(selected)?selected:parts[0],false);tab('flow');
-  if(vehicle)for(const [id,key] of [['turn','split'],['steer','rack'],['bump','bump'],['brake','brake']]){$(id).value=vehicle.settings[key]*100;$(id+'Value').textContent=$(id).value;}
-  $('journeyPath').hidden=i!==10;if(i===10){$('lessonIntro').textContent='앞에서 배운 시험대를 하나의 구동 경로로 연결했습니다. 재생하면 준비·출발·변속·가속·코너·제동을 순서대로 보여줍니다. 부품을 눌러 이름과 역할을 다시 확인하세요. 화면은 자동으로 움직이지 않습니다.';$('lessonCards').innerHTML='<article class="explain-card"><h3>같은 축을 끝까지 따라가세요.</h3><p>엔진 뒤의 클러치부터 변속기 출력축, 긴 프로펠러축, 뒤쪽 차동기어, 양쪽 반축까지 연결되어 있습니다. 앞바퀴의 랙과 타이로드는 별도의 조향 경로입니다.</p></article><article class="explain-card"><h3>변속에서는 엔진 연결을 끊습니다.</h3><p>준비와 2단 선택 단계에서 클러치가 분리됩니다. 동기화와 체결이 끝난 뒤 다시 엔진을 연결합니다. 이 안내 모형은 변속 중 출력을 잠시 멈추며 실차 관성 주행은 계산하지 않습니다.</p></article><article class="explain-card"><h3>제동 때에는 바퀴가 구동계를 돌립니다.</h3><p>엔진 클러치를 분리한 채 앞 패드가 디스크에 닿고 바퀴가 느려집니다. 회전 중인 바퀴 쪽에서 프로펠러축과 선택된 변속 기어로 회전이 전달됩니다.</p></article>';}
+  if(vehicle)for(const [id,key] of [['steer','rack'],['bump','bump'],['brake','brake']]){$(id).value=vehicle.settings[key]*100;$(id+'Value').textContent=$(id).value;}
+  $('journeyPath').hidden=i!==10;if(i===10){$('lessonIntro').textContent='앞에서 배운 시험대를 하나의 구동 경로로 연결했습니다. 재생하면 준비·출발·변속·가속·코너·제동을 순서대로 보여줍니다. 부품을 눌러 이름과 역할을 다시 확인하세요. 화면은 자동으로 움직이지 않습니다.';$('lessonCards').innerHTML='<article class="explain-card"><h3>같은 축을 끝까지 따라가세요.</h3><p>엔진 뒤의 클러치부터 변속기 출력축, 긴 프로펠러축, 뒤쪽 차동기어, 양쪽 반축까지 연결되어 있습니다. 앞바퀴의 랙과 타이로드는 별도의 조향 경로입니다.</p></article><article class="explain-card"><h3>변속에서는 엔진 연결을 끊습니다.</h3><p>각 단수를 선택하는 단계에서 클러치가 분리됩니다. 동기화와 체결이 끝난 뒤 다시 엔진을 연결합니다. 변속 중에도 차는 관성으로 이동합니다. 클러치를 분리하면 엔진 토크 전달만 끊기고, 바퀴와 출력축의 회전은 이어집니다.</p></article><article class="explain-card"><h3>제동 때에는 바퀴가 구동계를 돌립니다.</h3><p>엔진 클러치를 분리한 채 앞 패드가 디스크에 닿고 바퀴가 느려집니다. 회전 중인 바퀴 쪽에서 프로펠러축과 선택된 변속 기어로 회전이 전달됩니다.</p></article>';}
   document.querySelector('.edition').innerHTML=i>=6?'CONNECTED MECHANISMS<br>MANUAL · REAR-WHEEL DRIVE':document.querySelector('.edition').innerHTML;
   document.querySelectorAll('[data-mode]').forEach(b=>b.setAttribute('aria-pressed',+b.dataset.mode===i));
   for(const [id,m] of [['transmissionControls',6],['diffControls',7],['chassisControls',8],['brakeControls',9],['journeyControls',10]])$(id).hidden=i!==m;
+  if(i===7&&vehicle){$('turn').value=vehicle.settings.roadAngle||0;$('turnValue').textContent=(vehicle.settings.roadAngle||0)+'°';}
   $('lockAxle').checked=!!vehicle?.settings.locked;if(i>=6)$('modelScope').textContent='실제 정비 도면의 연결 구조를 단순화한 교육 모형 · 치수·잇수는 교육용 · 제작 기준에서 생략 범위를 확인하세요.';
   document.querySelector('.control-note').textContent=i<6?'1× = 크랭크 1회전 / 6초 · 실제 RPM 아님':'저속 관찰용 시계 · 사용자 조작의 체결 과정은 일시정지 중에도 진행';
   updateUI();
@@ -51,18 +53,20 @@
   if(chapter===4)values=[['스로틀 각도',(op.opening*180/Math.PI).toFixed(0)+'°'],['분사 니들',op.injection?'열림':'닫힘'],['점화 시점','상사점 −'+settings.advance+'°'],['불꽃',op.spark?'발생':settings.ignition?'대기':'점화 꺼짐']];
   if(chapter===5)values=[['온도 입력',settings.temperature+'°C'],['주 밸브 열림',Math.round(cool.open*100)+'%'],['냉각수 귀환',cool.open===0?'우회':cool.open===1?'라디에이터':'두 경로'],['오일 순환','펌프 → 갤러리']];
   if(chapter>=6&&vehicle){const st=vehicle.state,t=st.transmission,d=st.differential,b=st.brake;
-   $('stageState').textContent=chapter===6?t.phase:chapter===7?'좌우 평균 = 케이스':chapter===8?'고정 길이 암 · 타이로드':chapter===9?(b.pressure?'패드 접촉 · 제동':'패드 틈 · 무압력'):['출발 준비','클러치 연결 · 가속','클러치 분리 · 2단 선택','2단 가속','코너 · 좌우 속도 차이','클러치 분리 · 제동'][st.journeyStage];
+   $('stageState').textContent=chapter===6?t.phase:chapter===7?'좌우 평균 = 케이스':chapter===8?'고정 길이 암 · 타이로드':chapter===9?(b.pressure?'패드 접촉 · 제동':'패드 틈 · 무압력'):st.drive.title;
    if(chapter===6){const ratio=CarDrive.spec.ratios[t.gear]||0;values=[['선택 기어',t.gear==='N'?'중립':t.gear],['엔진 클러치',t.clutch===0?'연결':'분리 · 페달 '+Math.round(t.clutch*100)+'%'],['출력 / 입력',ratio?ratio.toFixed(3):'연결 없음'],['이상적 토크 배수',ratio?(1/Math.abs(ratio)).toFixed(2)+'×':'—']];$('shiftMessage').textContent=gearNotice|| (pedalGoal===1?'페달 → 유압 → 릴리스 포크 → 압력판 분리':pedalGoal===0?'압력판이 마찰판을 눌러 엔진과 입력축을 연결합니다.':t.busy?t.phase:t.clutch<.001?'엔진 연결 완료 · 재생하면 선택한 기어로 출력축이 회전합니다.':t.gear==='N'?'엔진 연결 해제 · 위에서 단수를 선택하세요.':'체결 완료 · 클러치 놓기 버튼으로 엔진을 연결하세요.');$('pressClutch').disabled=t.busy||pedalGoal!==null||t.clutch>.98;$('releaseClutch').disabled=t.busy||pedalGoal!==null||t.clutch<.001;document.querySelectorAll('[data-gear]').forEach(e=>{e.setAttribute('aria-pressed',e.dataset.gear===t.gear);e.disabled=t.busy||t.clutch<.98||pedalGoal!==null;});$('clutchPedalText').textContent=t.clutch<.001?'놓음 · 엔진 연결':t.clutch>.98?'밟음 · 엔진 연결 해제':'페달 '+Math.round(t.clutch*100)+'% · 분리';$('reverseUnlock').checked=t.reverseUnlocked;$('reverseUnlock').disabled=t.busy;[...$('shiftSequence').children].forEach((el,i)=>el.classList.toggle('active',i===(pedalGoal===0?3:pedalGoal===1?0:t.busy?(vehicle.transmission.shift<.4?1:2):t.clutch<.98?3:t.gear==='N'?1:3)));}
    if(chapter===7)values=[['케이스', '1.00×'],['왼쪽', (st.settings.locked?1:1-st.settings.split).toFixed(2)+'×'],['오른쪽',(st.settings.locked?1:1+st.settings.split).toFixed(2)+'×'],['작은 피니언 자전',st.settings.locked||st.settings.split===0?'없음':'있음']];
    if(chapter===8)values=[['랙 이동',st.settings.rack.toFixed(2)],['왼쪽 조향',(st.steering[0].angle*180/Math.PI).toFixed(1)+'°'],['오른쪽 조향',(st.steering[1].angle*180/Math.PI).toFixed(1)+'°'],['타이로드 길이',st.steering[0].length.toFixed(3)+' / 일정']];
    if(chapter===9)values=[['페달 입력',Math.round(st.settings.brake*100)+'%'],['상대 유압',Math.round(b.pressure*100)+'%'],['패드 틈',b.padGap.toFixed(3)],['디스크 속도',b.speed.toFixed(2)+' rad/s']];
-   if(chapter===10){values=[['주행 단계',(st.journeyStage+1)+' / 6'],['선택 기어',t.gear],['클러치',t.clutch>=.99?'분리':t.clutch===0?'연결':'연결 중'],['안내 시퀀스',Math.round(st.journeyTime/36*100)+'%']];$('journeyProgress').value=st.journeyTime;$('journeyPath').textContent=['① 클러치 분리 → 1단 동기화·체결. 아직 바퀴를 구동하지 않습니다.','② 엔진 → 클러치 → 1단 → 프로펠러축 → 뒤 바퀴.','③ 엔진 연결 해제 → 슬리브 중립 → 2단 동기화·체결.','④ 엔진 → 2단 → 뒤 바퀴. 같은 입력에서 더 빠른 출력입니다.','⑤ 랙 → 앞바퀴 조향. 뒤쪽 차동 피니언이 좌우 속도 차이를 허용합니다.','⑥ 클러치 분리 · 패드 접촉 → 감속. 바퀴 회전이 구동계를 역구동합니다.'][st.journeyStage];}
+   if(chapter===10){values=[];$('journeyProgress').max=CarRoad.plan.length;$('journeyProgress').value=st.drive.done?CarRoad.plan.length:st.journeyStage;$('journeyPath').textContent=st.drive.title+' · 페달, 클러치, 브레이크와 힘의 흐름을 위 계기판에서 비교하세요.';}
+
   }
+  driveUI.update(chapter);
   learning.update(chapter,clock.degrees,settings,vehicle?.state);
   $('liveReadings').hidden=[1,2,3,4,6,7,9,10].includes(chapter);
   $('liveReadings').innerHTML=values.map(([l,v])=>`<div class="reading">${l}<strong>${v}</strong></div>`).join('');
  }
- $('play').onclick=()=>{if(chapter===10&&vehicle.state.journeyTime>=36)vehicle.resetJourney();clock.running=!clock.running;updateUI();};$('speed').onchange=e=>{clock.speed=+e.target.value;};
+ $('play').onclick=()=>{if(chapter===10&&vehicle.state.drive.done)vehicle.resetJourney();clock.running=!clock.running;updateUI();};$('speed').onchange=e=>{clock.speed=+e.target.value;};
  function snapshot(){return {...model.audit(),systems:systems.audit(),vehicle:vehicle.audit(),lesson:lesson+1};}
  function seek(d){clock.seek(d);model?.update(clock.degrees);systems?.update(clock.degrees);lastDegree=clock.degrees;if(audits&&renderer)renderer.domElement.dataset.audit=JSON.stringify(snapshot());updateUI();}
  function changeSetting(key,value){settings[key]=value;systems?.setSettings(settings);model?.update(clock.degrees);systems?.update(clock.degrees);$('pedalValue').textContent=settings.pedal+'%';$('advanceValue').textContent=settings.advance+'°';$('temperatureValue').textContent=settings.temperature+'°C';updateUI();}
@@ -70,13 +74,14 @@
  for(const id of ['pedal','advance','temperature'])$(id).oninput=e=>changeSetting(id,+e.target.value);
  $('ignition').onchange=e=>changeSetting('ignition',e.target.checked);$('circuit').onchange=e=>{settings.fluidFocus=e.target.value;changeSetting('circuit',e.target.value);};
  document.querySelectorAll('[data-temperature]').forEach(b=>b.onclick=()=>{$('temperature').value=b.dataset.temperature;changeSetting('temperature',+b.dataset.temperature);});
- const changeGear=g=>{gearNotice=vehicle.transmission.request(g)?'':vehicle.transmission.message;vehicle.update();updateUI();};document.querySelectorAll('[data-gear]').forEach(b=>b.onclick=()=>changeGear(b.dataset.gear));
+ const changeGear=g=>{if(!vehicle.drive.canSelect(g,vehicle.transmission,CarDrive.spec.ratios)){gearNotice=vehicle.drive.message;}else{gearNotice=vehicle.transmission.request(g)?'':vehicle.transmission.message;}vehicle.update();updateUI();};document.querySelectorAll('[data-gear]').forEach(b=>b.onclick=()=>changeGear(b.dataset.gear));
  $('reverseUnlock').onchange=e=>{vehicle.transmission.unlockReverse(e.target.checked);vehicle.update();updateUI();};
- $('pressClutch').onclick=()=>{gearNotice='';pedalGoal=1;updateUI();};$('releaseClutch').onclick=()=>{gearNotice='';if(!vehicle.transmission.busy)pedalGoal=0;updateUI();};
+ $('pressClutch').onclick=()=>{gearNotice='';vehicle.drive.setLevel(0);pedalGoal=1;updateUI();};$('releaseClutch').onclick=()=>{gearNotice='';if(!vehicle.transmission.busy)pedalGoal=0;updateUI();};
 
 
- for(const [id,key,scale] of [['turn','split',100],['steer','rack',100],['bump','bump',100],['brake','brake',100]])$(id).oninput=e=>{vehicle?.setSettings({[key]:+e.target.value/scale});$(id+'Value').textContent=e.target.value;updateUI();};
- document.querySelectorAll('[data-split]').forEach(b=>b.onclick=()=>{vehicle.setSettings({split:+b.dataset.split});$('turn').value=+b.dataset.split*100;$('turnValue').textContent=$('turn').value;updateUI();});
+ $('turn').oninput=e=>{const angle=+e.target.value;vehicle.setSettings({split:CarRoad.corner(angle).split,roadAngle:angle});$('turnValue').textContent=angle+'°';updateUI();};
+ for(const [id,key,scale] of [['steer','rack',100],['bump','bump',100],['brake','brake',100]])$(id).oninput=e=>{vehicle?.setSettings({[key]:+e.target.value/scale});$(id+'Value').textContent=e.target.value;updateUI();};
+ document.querySelectorAll('[data-split]').forEach(b=>b.onclick=()=>{const angle=+b.dataset.split;vehicle.setSettings({split:CarRoad.corner(angle).split,roadAngle:angle});$('turn').value=angle;$('turnValue').textContent=angle+'°';updateUI();});
  $('spinBrake').onclick=()=>{vehicle.spinBrake();clock.running=true;updateUI();};
  $('resetJourney').onclick=()=>{vehicle.resetJourney();clock.running=false;updateUI();};
  $('angle').oninput=e=>seek(+e.target.value);$('stepBack').onclick=()=>seek(M.mod(clock.degrees-15,720));$('stepForward').onclick=()=>seek(M.mod(clock.degrees+15,720));
@@ -107,8 +112,8 @@
   const resize=()=>{const w=viewport.clientWidth,h=viewport.clientHeight;renderer.setSize(w,h,false);camera.aspect=w/h;camera.updateProjectionMatrix();};new ResizeObserver(resize).observe(viewport);resize();
   document.addEventListener('visibilitychange',()=>{if(document.hidden){clock.running=false;updateUI();}last=performance.now();});
   renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();clock.running=false;$('loading').hidden=false;$('loading').textContent='3D 그래픽 연결이 중단되었습니다. 새로고침하면 작업대를 다시 열 수 있습니다.';updateUI();});
-  function frame(now){const dt=last?(now-last)/1000:0;last=now;if(pedalGoal!==null){const c=vehicle.transmission.clutch,d=pedalGoal-c,n=c+Math.sign(d)*Math.min(Math.abs(d),Math.min(dt,.05)*2);vehicle.transmission.setClutch(n);if(Math.abs(n-pedalGoal)<1e-6)pedalGoal=null;}const previous=clock.degrees;clock.advance(dt);vehicle.tick(Math.min(dt,.05),CarMechanics.rad(clock.degrees-previous));if(chapter===10&&vehicle.state.journeyTime>=36)clock.running=false;if(clock.degrees!==lastDegree){model.update(clock.degrees);systems.update(clock.degrees);lastDegree=clock.degrees;}camera.position.copy(new T.Vector3(0,0,radius*Math.max(1,1/camera.aspect)).applyQuaternion(q).add(target));camera.up.copy(new T.Vector3(0,1,0).applyQuaternion(q));camera.lookAt(target);renderer.render(scene,camera);
-   renderer.domElement.dataset.state=JSON.stringify({chapter:lesson+1,experiment:chapter,degrees:clock.degrees,running:clock.running,speed:clock.speed,selected,camera:{q:q.toArray(),radius,target:target.toArray()}});
+  function frame(now){const dt=last?(now-last)/1000:0;last=now;if(pedalGoal!==null){const c=vehicle.transmission.clutch,d=pedalGoal-c,n=c+Math.sign(d)*Math.min(Math.abs(d),Math.min(dt,.05)*2);vehicle.transmission.setClutch(n);if(Math.abs(n-pedalGoal)<1e-6)pedalGoal=null;}const previous=clock.degrees;clock.advance(dt);vehicle.tick(Math.min(dt,.05),CarMechanics.rad(clock.degrees-previous));if(chapter===10&&vehicle.state.drive.done)clock.running=false;if(clock.degrees!==lastDegree){model.update(clock.degrees);systems.update(clock.degrees);lastDegree=clock.degrees;}camera.position.copy(new T.Vector3(0,0,radius*Math.max(1,1/camera.aspect)).applyQuaternion(q).add(target));camera.up.copy(new T.Vector3(0,1,0).applyQuaternion(q));camera.lookAt(target);renderer.render(scene,camera);
+   renderer.domElement.dataset.state=JSON.stringify({drive:vehicle.state.drive,chapter:lesson+1,experiment:chapter,degrees:clock.degrees,running:clock.running,speed:clock.speed,selected,camera:{q:q.toArray(),radius,target:target.toArray()}});
    if(audits&&now-lastAudit>100){renderer.domElement.dataset.audit=JSON.stringify(snapshot());lastAudit=now;}
    if(now-lastUI>100){updateUI();lastUI=now;}requestAnimationFrame(frame);
   }requestAnimationFrame(frame);

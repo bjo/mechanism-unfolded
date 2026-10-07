@@ -15,6 +15,7 @@ window.ChapterGuides={car:[
  ['자동변속기는 언제 바꿔야 하는지 어떻게 알까요?','같은 속도라도 천천히 달릴 때와 세게 가속할 때 필요한 힘은 다릅니다. 차속 하나만으로 적절한 단수를 고르기는 어렵습니다.','제어기는 차속과 가속페달 같은 신호로 필요한 힘을 판단합니다. 이 모형에서는 페달을 많이 밟으면 낮은 단수를 더 오래 유지합니다. 단수가 경계에서 계속 오락가락하지 않도록 올릴 때와 내릴 때의 기준도 다릅니다.','D에서 페달을 적게 밟은 경우와 많이 밟은 경우를 비교하며 차속 신호를 올리세요. 슬라이더는 판단을 시험하는 입력이며 실제 차의 가속을 계산하지 않습니다.'],
  ['후진할 때 엔진도 거꾸로 도나요?','엔진의 회전 방향은 그대로인데 바퀴는 반대로 돌아야 합니다. 중립에서는 엔진이 돌아도 바퀴로 구동력이 전달되지 않아야 합니다.','중립은 엔진 쪽에서 기어로 들어가는 연결을 풉니다. 후진은 기어 세트의 다른 부분에 입력을 주고 받침을 고정해 출력 회전을 반대로 만듭니다. 같은 부품이라도 연결 조합에 따라 결과가 달라집니다.','차속 신호를 0으로 낮춰 N과 R을 선택하고 재생하세요. R 체결 후 신호를 조금 올려 입력과 출력의 회전 방향을 비교하세요.']
 ]};
+ChapterGuides.car=[0,1,2,3,6,5,4,7].map(i=>ChapterGuides.car[i]);
 window.renderChapterGuide=function(id,kind,index){
  const el=document.getElementById(id),entry=ChapterGuides[kind][index];
  el.replaceChildren();const h=document.createElement('h2');h.textContent=entry[0];el.append(h);

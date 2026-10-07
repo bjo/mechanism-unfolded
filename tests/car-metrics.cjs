@@ -1,3 +1,4 @@
+global.CarRoad=require('../car-road');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),M=require('../car-metrics'),K=require('../car-mechanics'),D=require('../car-drivetrain');
 const near=(a,b,e=1e-6)=>assert(Math.abs(a-b)<e,`${a} != ${b}`);
 for(const pedal of [0,35,100])for(const rpm of [1000,1500,5000])for(const advance of [0,18,40]){const s={pedal,rpm,advance},c=M.cycle(s);let w=0;for(const p of c.points){const g=M.geometry(p.d);assert(p.pressure>0);near(p.force,(p.pressure-M.spec.ambient)*g.area);near(p.torque,p.force*g.lever);w+=p.torque*Math.PI/180;}near(c.mean,w/(4*Math.PI));near(M.bank(412,s).mean,c.mean*4);near(M.bank(412,s,true).mean,c.mean);near(M.bank(412,s).power,c.mean*4*rpm*Math.PI*2/60/1000);}
