@@ -34,3 +34,8 @@
 `tests/car-metrics.cjs`는 힘/토크 단위 관계, 일 적분, 상사점 지렛팔, 압축의 부호, 점화 선행각·RPM 응답, 실린더 수와 배기량 비교, 구동력 차단, 유압 면적비, 코너 거리와 잠금 회전 관계를 검사합니다. Three.js 어댑터로 기존 엔진 기구와 오일막 위치, 재킷 분리, 실제 차동 축의 회전 관계도 검사합니다. 오류 샘플 주입을 포함하며 전체 CAD 간섭 검사나 열유체·타이어 해석을 의미하지 않습니다.
 
 브라우저에서는 점화각 0/18/40°, 동일 실린더·동일 총배기량 비교, 오일 단독/고온 냉각수, 차동 허용/잠금, 정지 상태, 브레이크 최대 입력의 13개 DOM 진단 샘플을 별도로 검증했습니다. 조작 시 카메라 유지와 390 px 모바일 가로 넘침 없음도 확인했습니다.
+
+
+## Paired engine charts and controls
+
+Pressure (absolute bar) and gas torque (N·m) are always rendered together outside the explanation tabs in engine modes 0–5, with the same 720-degree cursor. Each chart has its own labeled scale. Four-cylinder mode shows cylinder 1 pressure and total bank torque. Crank-only and cooling modes explicitly label the combustion calculation as a comparison. Equations connect net gas pressure to piston force, effective crank lever to instantaneous torque, and mean torque/RPM to power. The six-speed UI uses explicit press/select/release buttons; its existing hydraulic linkage and synchronizer state machine are unchanged, including clutch and reverse interlocks.
