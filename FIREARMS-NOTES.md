@@ -21,3 +21,13 @@ This deliberately separates historical evidence from illustrative geometry. No m
 ## Validation
 
 Run `node tests/firearms.cjs`: chapter content, source URLs, 12/4 release boundaries, pause/speed/completion clock behavior, local assets and document hooks. Browser checks cover all four chapters, compare, both chapter-three variants, stage selection, playback end state, camera persistence, responsive layout, homepage navigation and console errors. These are interaction/content checks, not weapon-mechanics certification.
+
+## Chapter 1 history and energy supplement
+
+[Springer, Gunpowder (2025)](https://doi.org/10.1007/978-981-99-5009-6_10282) supports the connection to Chinese alchemical traditions and a discovery no later than the ninth century. This is distinguished from the 1424 artifact date. A qualitative heated-gas/moving-wall SVG explains energy conversion; it is not a weapon section, loading sequence or performance model. Particle motion is illustrative, with one shared demonstration clock and no thermodynamic calibration.
+
+## Exterior and ammunition-history revision
+
+Exterior sculptures now include a contoured stock, wood grain, tapered metal profiles, surface bands, plates, decorative screw heads and static category markers. These remain approximate exterior illustrations, not dimensional reproductions of the cited objects. No internal mechanisms were added. Metal/wood finish is procedural original artwork. The former primitives were replaced by a shared builder used in single and comparison views.
+
+Chapter-specific history separates propellant, ignition, projectile shape and packaging rather than assigning them a single invention date. Additional sources: [The Met powder flask](https://www.metmuseum.org/art/collection/search/22393), [NPS Brown Bess](https://home.nps.gov/articles/brown-bess.htm), [NAM paper cartridge](https://collection.nam.ac.uk/detail.php?acc=1978-11-175-1), [NPS projectile coexistence](https://www.nps.gov/articles/battle-in-the-north-woods.htm). No mixtures, fabrication or loading procedures are supplied.
