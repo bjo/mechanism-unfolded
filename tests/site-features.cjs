@@ -1,0 +1,5 @@
+const fs=require('node:fs'),vm=require('node:vm'),assert=require('node:assert/strict');
+const src=fs.readFileSync(require('node:path').join(__dirname,'../site-features.js'),'utf8');
+for(const enabled of [false,true]){let callback;const card={dataset:{feature:'firearms'},hidden:true},gate={hidden:false},count={textContent:''},link={href:'https://example.org/site/firearms.html?chapter=2'};
+const ctx={URL,location:{href:'https://example.org/site/index.html'+(enabled?'?preview=firearms':''),origin:'https://example.org'},document:{addEventListener:(n,fn)=>callback=fn,querySelectorAll:s=>s==='[data-feature]'?[card]:[link],getElementById:id=>id==='featureGate'?gate:count}};ctx.window=ctx;vm.runInNewContext(src,ctx);callback();assert.equal(ctx.SiteFeatures.firearms,enabled);assert.equal(card.hidden,!enabled);assert.equal(gate.hidden,enabled);assert.equal(count.textContent,'THE COLLECTION · '+(enabled?'03':'02'));assert.equal(new URL(link.href).searchParams.get('preview'),enabled?'firearms':null);}
+console.log('PASS default-off gate, preview override, collection count, preview link preservation');

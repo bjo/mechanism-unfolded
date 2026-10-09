@@ -1,4 +1,4 @@
-(()=>{'use strict';
+(()=>{'use strict';if(!window.SiteFeatures?.firearms)return;
 const $=id=>document.getElementById(id),D=Firearms,clock=new D.Clock();let mechanics=true,chapter=0,compare=false,kind='flint',renderer,scene,camera,objects=[],yaw=.25,pitch=.18,distance=8.4,last=0,lastPhase=-1;
 const requested=Number(new URL(location.href).searchParams.get('chapter'));chapter=Number.isInteger(requested)&&requested>=1&&requested<=4?requested-1:0;
 D.chapters.forEach((c,i)=>{const b=document.createElement('button');b.dataset.chapter=i+1;b.innerHTML=`${String(i+1).padStart(2,'0')} · ${c.kind}<small>${c.title}</small>`;b.onclick=()=>select(i);$('chapters').append(b);});
