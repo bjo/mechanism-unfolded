@@ -6,7 +6,7 @@
  document.addEventListener('DOMContentLoaded',()=>{
   document.querySelectorAll('[data-feature]').forEach(el=>{el.hidden=!SiteFeatures[el.dataset.feature];});
   const gate=document.getElementById('featureGate');if(gate)gate.hidden=SiteFeatures.firearms;
-  const count=document.getElementById('collectionCount');if(count)count.textContent='THE COLLECTION · '+(SiteFeatures.firearms?'03':'02');
+  const count=document.getElementById('collectionCount');if(count)count.textContent='THE COLLECTION · '+(SiteFeatures.firearms?'04':'03');
   if(preview)document.querySelectorAll('a[href]').forEach(a=>{const u=new URL(a.href,location.href);if(u.origin===location.origin&&(/firearms\.html$/.test(u.pathname)||/\/$|index\.html$/.test(u.pathname))){u.searchParams.set('preview','firearms');a.href=u.href;}});
  });
 })();

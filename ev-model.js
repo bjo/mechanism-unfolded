@@ -1,0 +1,34 @@
+/* APP310 connection topology; educational dimensions. Every view uses this one assembly. */
+(function(root){
+const spec={module:.09,teeth:[20,60,20,60],centers:[[-3,1,0],[.6,1,0],[.6,1,1],[4.2,1,1]],width:.3};
+function outline(n){const m=spec.module,r=n*m/2,base=r*Math.cos(Math.PI/9),tip=r+m,foot=r-1.25*m,inv=x=>Math.tan(x)-x,ip=inv(Math.PI/9),half=Math.PI/(2*n)-.007/r,pts=[];const point=(a,d)=>pts.push([Math.cos(a)*d,Math.sin(a)*d]);for(let t=0;t<n;t++){const a=t*2*Math.PI/n;point(a-Math.PI/n,foot);point(a-half-ip,foot);for(let j=0;j<=7;j++){const d=base+(tip-base)*j/7;point(a-half-ip+inv(Math.acos(base/d)),d);}const at=half+ip-inv(Math.acos(base/tip));for(let j=1;j<=5;j++)point(a-at+2*at*j/5,tip);for(let j=7;j>=0;j--){const d=base+(tip-base)*j/7;point(a+half+ip-inv(Math.acos(base/d)),d);}point(a+half+ip,foot);point(a+Math.PI/n,foot);}return pts;}
+function create(T){
+const group=new T.Group(),parts={},gears=[],coils=[],flow=[],C={battery:0x719c68,inverter:0x73949d,motor:0xb97e4c,gear:0xd0ab61,shaft:0x87999b,wheel:0x364641};
+function mesh(g,c,p,parent=group,id){const o=new T.Mesh(g,new T.MeshStandardMaterial({color:c,roughness:.43,metalness:.35}));o.position.set(...p);if(id)o.userData.part=id;parent.add(o);return o;}
+function box(w,h,d,c,p,parent,id){return mesh(new T.BoxGeometry(w,h,d),c,p,parent,id);}
+function cylinder(r,len,c,p,parent,id){const g=new T.CylinderGeometry(r,r,len,40);g.rotateX(Math.PI/2);return mesh(g,c,p,parent,id);}
+function make(id,pos){const o=new T.Group();o.position.set(...pos);o.userData.part=id;group.add(o);parts[id]=o;return o;}
+const battery=make('battery',[-1.8,-3.45,-1.4]);box(5.2,2.05,.18,0x789187,[0,0,-.35],battery,'battery');for(let y=0;y<3;y++)for(let x=0;x<4;x++){box(1.13,.52,.42,C.battery,[-1.84+x*1.23,-.65+y*.65,0],battery,'battery');box(.85,.035,.03,0xc6d4b5,[-1.84+x*1.23,-.65+y*.65,.23],battery,'battery');}
+const inverter=make('inverter',[-4.5,-1.2,-1.4]);box(1.5,1,.65,C.inverter,[0,0,0],inverter,'inverter');for(let i=0;i<7;i++)box(1.3,.045,.08,0xc3d2cf,[0,-.4+i*.13,.36],inverter,'inverter');
+function wire(points,col,id){const curve=new T.CatmullRomCurve3(points.map(p=>new T.Vector3(...p)),false,'centripetal');mesh(new T.TubeGeometry(curve,50,.036,8,false),col,[0,0,0],group,id);const bead=mesh(new T.SphereGeometry(.08,10,8),0xffebad,[0,0,0],group,id);flow.push({curve,bead});}
+wire([[-4.3,-3,-1.2],[-5.5,-2.8,-1.2],[-5.5,-1.4,-1.2],[-5.2,-1.4,-1.2]],0xce8345,'battery');wire([[-4.3,-3.3,-1.2],[-5.7,-3,-1.2],[-5.7,-.9,-1.2],[-5.2,-.9,-1.2]],0xce8345,'battery');
+const motor=make('motor',[-3,1,-1.65]),rotor=new T.Group();motor.add(rotor);cylinder(.78,.82,0x647e80,[0,0,0],rotor,'motor');for(const side of [-1,1])for(let s=0;s<2;s++){const arc=new T.TorusGeometry(.82,.09,8,40,Math.PI*.85);mesh(arc,s?0x6585b4:0xc9705a,[0,0,.43*side],rotor,'motor').rotation.z=s*Math.PI-Math.PI*.425;}
+const field=new T.Group();motor.add(field);const arrow=new T.ArrowHelper(new T.Vector3(1,0,0),new T.Vector3(0,0,.73),1.3,0x268c79,.23,.14);arrow.position.z=-.73;field.add(arrow);
+for(let i=0;i<6;i++){const a=i*Math.PI/3,col=[0xc27a46,0x9375a5,0x648faf][i%3],p=[Math.cos(a)*1.17,Math.sin(a)*1.17,0];const core=box(.31,.51,.95,col,p,motor,'motor');core.rotation.z=a;coils.push(core);const winding=mesh(new T.TorusGeometry(.19,.045,8,20),col,p,motor,'motor');winding.rotation.z=a;}
+for(let k=0;k<3;k++)wire([[-4.3+k*.23,-.7,-1.4],[-4.25+k*.25,-.15,-1.4],[Math.cos((k+3)*Math.PI/3)*1.17-3,Math.sin((k+3)*Math.PI/3)*1.17+1,-2.13]],[0xc27a46,0x9375a5,0x648faf][k],'inverter');
+// Housing arcs leave the front open; motor and reduction axes are parallel.
+mesh(new T.TorusGeometry(1.45,.07,10,60),0x829a90,[0,0,-.55],motor,'motor');
+const drive=make('gear',[0,0,0]);
+spec.centers.forEach((p,i)=>{const n=spec.teeth[i],poly=outline(n),shape=new T.Shape(poly.map(v=>new T.Vector2(...v))),hole=new T.Path();hole.absarc(0,0,.21,0,2*Math.PI,true);shape.holes.push(hole);if(n===60)for(let h=0;h<6;h++){const a=h*Math.PI/3,cut=new T.Path();cut.absarc(Math.cos(a)*1.7,Math.sin(a)*1.7,.56,0,2*Math.PI,true);shape.holes.push(cut);}const geom=new T.ExtrudeGeometry(shape,{depth:spec.width,bevelEnabled:false,curveSegments:24});geom.translate(0,0,-spec.width/2);const o=mesh(geom,i<2?0xc9a260:0x6b9e97,p,drive,'gear');o.userData={part:'gear',teeth:n,pitchRadius:n*spec.module/2,outline:poly};cylinder(.3,.4,0xa9b6a9,[0,0,0],o,'gear');gears.push(o);});
+const shafts=[cylinder(.17,3.6,C.shaft,[-3,1,-1],drive,'gear'),cylinder(.17,1.7,C.shaft,[.6,1,.5],drive,'gear'),cylinder(.18,7,C.shaft,[4.2,1,0],drive,'wheel')];
+// Rear bearing support, positive shaft overlap, no opaque plate in inspection sightline.
+for(const [x,z] of [[-3,-2.65],[.6,-.3],[4.2,-1.4]]){mesh(new T.TorusGeometry(.26,.07,8,24),0xa7b7a6,[x,1,z],drive,'gear');box(.15,.65,.15,0x8fa091,[x,.45,z],drive,'gear');}
+const differential=make('wheel',[4.2,1,.15]);cylinder(.65,1.4,0x8fa69c,[0,0,0],differential,'wheel');for(let i=0;i<6;i++){const a=i*Math.PI/3;cylinder(.055,.08,0xe2dcc0,[Math.cos(a)*.5,Math.sin(a)*.5,.75],differential,'wheel');}
+const wheels=[];for(const z of [-3.55,3.55]){const w=new T.Group();w.position.set(4.2,1,z);group.add(w);w.userData.part='wheel';mesh(new T.TorusGeometry(1.2,.28,14,56),C.wheel,[0,0,0],w,'wheel');cylinder(.31,.48,0xa9bcb3,[0,0,0],w,'wheel');for(let j=0;j<6;j++){const a=j*Math.PI/3;const spoke=box(1.85,.09,.16,0xb6c7ba,[0,0,0],w,'wheel');spoke.rotation.z=a;}wheels.push(w);}
+function update(phase,pedal){const b=Math.PI/60-phase/3,c=Math.PI/60-b/3;[phase,b,b,c].forEach((v,i)=>gears[i].rotation.z=v);rotor.rotation.z=phase;field.rotation.z=phase+(pedal>0?Math.PI/2:0);field.visible=pedal>0;wheels.forEach(w=>w.rotation.z=c);differential.rotation.z=c;shafts.forEach((s,i)=>s.rotation.z=[phase,b,c][i]);coils.forEach((o,i)=>{const current=-pedal/100*Math.sin(phase-i*Math.PI/3);o.material.emissive.setHex(current>0?0xd49153:0x3378ad);o.material.emissiveIntensity=Math.abs(current)*.6;});flow.forEach(({bead,curve},i)=>{bead.visible=pedal>0;bead.position.copy(curve.getPoint(((phase/(2*Math.PI)+i*.19)%1+1)%1));});group.updateMatrixWorld(true);}
+function highlight(id){group.traverse(o=>{if(o.isMesh&&o.material.emissive){o.material.emissive.setHex(o.userData.part===id?0x5eae78:0);o.material.emissiveIntensity=o.userData.part===id?.22:0;}});}
+function diagnostics(){group.updateMatrixWorld(true);return gears.map((g,i)=>({id:'g'+i,center:g.getWorldPosition(new T.Vector3()).toArray(),axis:new T.Vector3(0,0,1).transformDirection(g.matrixWorld).toArray(),pitchRadius:g.userData.pitchRadius,teeth:g.userData.teeth,faceWidth:spec.width,omega:[1,-1/3,-1/3,1/9][i]}));}
+update(0,45);return {group,parts,gears,rotor,field,wheels,shafts,update,highlight,diagnostics};
+}
+const api={create,spec,outline};if(typeof module!=='undefined')module.exports=api;else root.EVModel=api;
+})(typeof window!=='undefined'?window:globalThis);
