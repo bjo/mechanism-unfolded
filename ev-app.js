@@ -7,7 +7,7 @@ $('title').textContent=L?D.titles[chapter-1]:D.titles[0];document.title=$('title
 for(const k of ['intro','question','try','body','formula','detail'])$(k).textContent=L[k];$('steps').innerHTML=L.steps.map(x=>`<li>${x}</li>`).join('');
 $('nav').innerHTML=D.titles.map((t,i)=>`${i===0?'<small>기본편 · 01–07</small>':i===7?'<small>심화편 · 08–12</small>':''}${i<3?`<a href="ev.html?chapter=${i+1}" ${i+1===chapter?'aria-current="page"':''}>${String(i+1).padStart(2,'0')} ${t}</a>`:`<span class="pending">${String(i+1).padStart(2,'0')} ${t} · 준비 중</span>`}`).join('');
 $('mapCards').innerHTML=D.titles.map((t,i)=>i<3?`<a href="ev.html?chapter=${i+1}"><small>기본 ${i+1} / 탐구하기 ↗</small><strong>${t}</strong></a>`:`<article><small>${i<7?'기본':'심화'} ${i+1} / 준비 중</small><strong>${t}</strong></article>`).join('');
-$('prev').href=chapter===1?'./':'ev.html?chapter='+(chapter-1);$('prev').textContent=chapter===1?'← 이야기 목록':'← '+D.titles[chapter-2];$('next').href=chapter===3?'#map':'ev.html?chapter='+(chapter+1);$('next').textContent=chapter===3?'다음 챕터 계획 보기 ↘':D.titles[chapter]+' →';
+$('prev').href=chapter===1?'index.html':'ev.html?chapter='+(chapter-1);$('prev').textContent=chapter===1?'← 이야기 목록':'← '+D.titles[chapter-2];$('next').href=chapter===3?'#map':'ev.html?chapter='+(chapter+1);$('next').textContent=chapter===3?'다음 챕터 계획 보기 ↘':D.titles[chapter]+' →';
 if(requested!==chapter){const u=new URL(location.href);u.searchParams.set('chapter','1');history.replaceState(null,'',u);}
 $('seriesLabel').hidden=$('parallelLabel').hidden=chapter!==1;
 let selected=chapter===1?'battery':chapter===2?'motor':'gear';
