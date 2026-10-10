@@ -1,0 +1,198 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="An interactive field guide to options markets. Build payoffs, explore pricing and Greeks, read the tape, and separate observed facts from assumptions.">
+  <title>Options, unfolded — Mechanism Unfolded</title>
+  <link rel="stylesheet" href="options.css">
+  <script src="options-math.js" defer></script>
+  <script src="options-app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the lessons</a>
+<header class="site-header"><a class="brand" href="index.html">mechanism <span>unfolded</span></a><a href="index.html#stories">← All explorations</a></header>
+<div class="page">
+<nav class="contents" aria-label="Options lessons"><div>
+  <p class="eyebrow">A market, in pieces</p><h2>Options, unfolded</h2>
+  <div class="nav-links">
+    <small>01—06 / THE CONTRACT</small>
+    <a href="#contract"><b>01</b> A right, at a price</a><a href="#payoff"><b>02</b> Build a payoff</a><a href="#pricing"><b>03</b> What sets the price?</a><a href="#greeks"><b>04</b> The sensitivities</a><a href="#parity"><b>05</b> Calls meet puts</a><a href="#surface"><b>06</b> A surface of volatility</a>
+    <small>07—10 / THE MARKET</small>
+    <a href="#market"><b>07</b> Where trades happen</a><a href="#packages"><b>08</b> Read the whole package</a><a href="#tape"><b>09</b> Who crossed the spread?</a><a href="#interest"><b>10</b> Activity vs. positions</a>
+    <small>11—14 / THE INTERPRETATION</small>
+    <a href="#settlement"><b>11</b> How a contract ends</a><a href="#exercise"><b>12</b> Exercise & assignment</a><a href="#hedging"><b>13</b> The hedge moves too</a><a href="#evidence"><b>14</b> Before you infer</a>
+  </div>
+</div></nav>
+<main id="main">
+<section class="hero" aria-labelledby="title"><div><p class="eyebrow">FROM A CONTRACT TO A MARKET</p><h1>Options,<br><em>unfolded.</em></h1><p class="deck">A price is the beginning of the story.<br>Pull apart the payoff, the uncertainty, and the trade that put it on the tape.</p><a class="hero-link" href="#contract">Start with one contract <span aria-hidden="true">↘</span></a><p class="meta">14 LESSONS · 8 HANDS-ON LABS · AT YOUR OWN PACE</p></div>
+<svg viewBox="0 0 380 340" role="img" aria-label="A curved option value above an angular expiration payoff"><defs><pattern id="dots" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r=".8" fill="#bdcec4"/></pattern></defs><rect width="380" height="340" fill="url(#dots)"/><path d="M35 250H350M80 290V50" stroke="#99b1a4" fill="none"/><path d="M40 269H190L345 88" fill="none" stroke="#ad754b" stroke-width="2" stroke-dasharray="6 5"/><path d="M40 265C155 263 180 225 215 192S300 111 345 61" fill="none" stroke="#28676b" stroke-width="4"/><path d="M230 290V65" stroke="#a4b9ac" stroke-dasharray="3 6"/><circle cx="230" cy="177" r="6" fill="#28676b" stroke="#f6f5ef" stroke-width="3"/><text x="40" y="29" font-family="monospace" font-size="10" fill="#586e70">TIME CHANGES THE SHAPE</text><text x="247" y="323" font-family="monospace" font-size="10" fill="#586e70">PRICE OF UNDERLYING →</text></svg>
+</section>
+<p class="scope">U.S. listed options · Educational models, not trade recommendations. All lab prices, positions, quotes and scenarios are invented illustrations. Fees, tax and financing costs are omitted from payoff examples.</p>
+<noscript><p class="readout">The lessons and worked examples are readable without JavaScript. Enable JavaScript to use the eight labs.</p></noscript>
+
+<section class="lesson" id="contract" aria-labelledby="contract-title">
+<p class="eyebrow">01 / THE CONTRACT</p><h2 id="contract-title">One side gets a choice.<br>The other accepts an obligation.</h2>
+<p class="idea">A call gives its owner the right to buy; a put gives its owner the right to sell. The strike fixes the price, and expiration limits the life of that right.</p>
+<p class="why"><strong>Why it matters.</strong> Buying an option and buying its underlying create different outcomes. A buyer pays a premium for the choice. A seller receives that premium and must meet the contract’s terms if assigned.</p>
+<div class="cards"><article class="card"><span class="big">What?</span><h3>The underlying & deliverable</h3><p>A stock, ETF or index exposure. A standard equity option usually represents 100 shares; an adjusted contract can have a different deliverable.</p></article><article class="card"><span class="big">At what price?</span><h3>The strike & premium</h3><p>The strike is the exercise price. The premium is the option’s price. They are separate cash amounts with separate jobs.</p></article><article class="card"><span class="big">Until when?</span><h3>Expiration & exercise style</h3><p>American style allows early exercise. European style allows exercise only at expiration. These names describe timing, not geography.</p></article></div>
+<p class="formula">Illustrative contract: one 100-strike call at $4.00 × 100 = $400 premium.</p>
+<p class="small">If exercised for shares, that call requires $10,000 to buy 100 shares at the strike. Selling the option to close the position is a different transaction from exercising it.</p>
+<p class="trap"><strong>Common misconception</strong>“A $4 option costs $4.” Check the multiplier and the contract’s actual deliverable first.</p>
+<p class="source">Read further: <a href="https://www.optionseducation.org/optionsoverview/options-basics">OIC · Options basics</a>.</p>
+</section>
+
+<section class="lesson" id="payoff" aria-labelledby="payoff-title">
+<p class="eyebrow">02 / THE SHAPE OF THE OUTCOME</p><h2 id="payoff-title">Being right about direction<br>is only part of being profitable.</h2>
+<p class="idea">At expiration, a call pays max(price − strike, 0); a put pays max(strike − price, 0). Profit also includes the premium you paid or received.</p>
+<p class="why"><strong>Why it matters.</strong> An in-the-money option can still lose money for its buyer. Combine legs to see how the premium and the shape of the payout change together.</p>
+<div class="lab js-only" id="payoff-lab"><div class="lab-head"><h3>Build an expiration payoff</h3><span>ILLUSTRATIVE · 100× MULTIPLIER</span></div>
+<div class="buttons" aria-label="Payoff presets"><button data-preset="call" aria-pressed="true">Long call</button><button data-preset="put" aria-pressed="false">Long put</button><button data-preset="spread" aria-pressed="false">Call spread</button><button data-preset="straddle" aria-pressed="false">Long straddle</button></div>
+<div class="legs">
+<fieldset class="leg"><legend>Leg 1 · one contract</legend><div class="leg-fields"><label>Position<select id="leg1-side"><option value="1">Buy / long</option><option value="-1">Sell / short</option></select></label><label>Type<select id="leg1-type"><option value="call">Call</option><option value="put">Put</option></select></label><label>Strike ($)<input id="leg1-strike" type="number" required min="60" max="140" step="1" value="100"></label><label>Premium ($ / unit)<input id="leg1-premium" type="number" required min="0" max="40" step="0.25" value="4"></label></div></fieldset>
+<fieldset class="leg"><legend><label><input type="checkbox" id="leg2-enabled"> Include leg 2</label></legend><div class="leg-fields" id="leg2-fields"><label>Position<select id="leg2-side" disabled><option value="1">Buy / long</option><option value="-1" selected>Sell / short</option></select></label><label>Type<select id="leg2-type" disabled><option value="call">Call</option><option value="put">Put</option></select></label><label>Strike ($)<input id="leg2-strike" type="number" required min="60" max="140" step="1" value="110" disabled></label><label>Premium ($ / unit)<input id="leg2-premium" type="number" required min="0" max="40" step="0.25" value="1.5" disabled></label></div></fieldset>
+</div>
+<div class="lab-grid"><div><svg class="chart" id="payoff-chart" viewBox="0 0 620 310" role="img" aria-label="Expiration profit and loss by underlying price"></svg><p class="legend"><span>Profit / loss, including premium</span></p></div><div class="controls"><label class="control" for="expiry-spot">Underlying at expiration <output id="expiry-spot-out"></output><input id="expiry-spot" type="range" min="40" max="160" value="108"></label><div class="readout" id="payoff-result" aria-live="polite"></div><p class="small">Same expiry and 100× multiplier for both legs. Premiums are independent inputs, not executable quotes. The graph shows only $40–$160; the tails continue.</p></div></div></div>
+<p class="small">“In the money” means positive intrinsic value: the underlying is above the strike for a call, or below it for a put. “At the money” means near the strike. “Out of the money” means exercise currently has no positive value.</p>
+<p class="no-js-example formula">Illustration: buy the 100 call for $4; underlying ends at $108. Payout = $800. Profit = $800 − $400 = $400. Break-even = $104.</p>
+<p class="trap"><strong>Common misconception</strong>“The line stops, so the risk stops.” A standalone short call has unlimited upside loss. A long option can lose all its premium. Expiration diagrams also omit the path, margin calls and early assignment.</p>
+</section>
+
+<section class="lesson" id="pricing" aria-labelledby="pricing-title">
+<p class="eyebrow">03 / PRICE BEFORE EXPIRATION</p><h2 id="pricing-title">Uncertainty has a price.</h2>
+<p class="idea">Before expiry, an option can be valuable even when exercise would pay nothing today. There is still time for the outcome to change.</p>
+<p class="why"><strong>Why it matters.</strong> Intrinsic value describes exercise now. The premium beyond it is often called time value or extrinsic value. Volatility, time, interest rates and dividends all affect the price.</p>
+<div class="lab js-only" id="pricing-lab"><div class="lab-head"><h3>A playable pricing model</h3><span>EUROPEAN · BLACK–SCHOLES</span></div>
+<div class="lab-grid"><div><svg class="chart" id="pricing-chart" viewBox="0 0 620 310" role="img" aria-label="Model option price and intrinsic value by underlying price"></svg><p class="legend"><span>Model value now</span><span>Exercise value now</span></p><div class="metrics" id="price-metrics" aria-live="polite"></div></div>
+<div class="controls"><label class="control">Option type<select id="model-type"><option value="call">Long call</option><option value="put">Long put</option></select></label><label class="control">Underlying <output id="model-spot-out"></output><input id="model-spot" type="range" min="60" max="140" value="100"></label><label class="control">Strike <output id="model-strike-out"></output><input id="model-strike" type="range" min="70" max="130" value="100"></label><label class="control">Calendar days remaining <output id="model-days-out"></output><input id="model-days" type="range" min="0" max="365" value="45"></label><label class="control">Annual volatility <output id="model-vol-out"></output><input id="model-vol" type="range" min="5" max="80" value="25"></label><label class="control">Annual interest rate <output id="model-rate-out"></output><input id="model-rate" type="range" min="0" max="10" step="0.25" value="3"></label><label class="control">Annual dividend yield <output id="model-yield-out"></output><input id="model-yield" type="range" min="0" max="8" step="0.25" value="0"></label></div></div>
+<p class="small">Try doubling volatility, then reducing time to zero. Model prices are dollars per unit. Multiply by 100 for this illustrative contract. Constant volatility and rates, a continuous dividend yield, frictionless hedging and no early exercise are assumed. A calendar year is 365 days here.</p>
+<details><summary>Turn a price back into implied volatility</summary><p>IV is the model’s volatility input that reproduces a given price. Hold the other inputs fixed and solve backward. It depends on the chosen model and the quote’s timestamp.</p><label class="control" for="iv-price">Illustrative premium ($ / unit)<input id="iv-price" type="number" required min="0" max="200" step="0.01" value="4"></label><p class="readout" id="iv-result" aria-live="polite"></p><p class="small">This solver searches 0–500% annual volatility. At expiry, outside price bounds, or without a solution in that range, it reports unavailable.</p></details>
+</div>
+<p class="no-js-example formula">Illustration: a 100-strike call with a $100 underlying, one year, 20% volatility, 5% interest and no dividends has a model value of about $10.45 per unit.</p>
+<p class="trap"><strong>Common misconception</strong>“IV of 25% predicts a 25% gain.” IV describes a model’s uncertainty scale, not a direction or a promised return. A quoted midpoint is not necessarily a price you can trade at. European option value can fall below immediate-exercise value when carrying costs matter.</p>
+<p class="source"><a href="https://www.optionseducation.org/advancedconcepts/volatility-the-greeks">OIC · Volatility and pricing inputs</a> · <a href="https://www.optionseducation.org/advancedconcepts/black-scholes-formula">OIC · Black–Scholes formula</a>.</p>
+</section>
+
+<section class="lesson" id="greeks" aria-labelledby="greeks-title">
+<p class="eyebrow">04 / CHANGE ONE THING</p><h2 id="greeks-title">Greeks are local sensitivities.</h2>
+<p class="idea">Instead of asking only what an option is worth, ask how its value changes when one input moves.</p>
+<p class="why"><strong>Why it matters.</strong> A favorable stock move can be offset by falling IV or passing time. The Greeks below come from the same settings as the pricing lab, for one long option per unit.</p>
+<div class="lab js-only"><div class="lab-head"><h3>The pricing lab’s dashboard</h3><a class="small" href="#pricing">Change the inputs ↑</a></div><div class="metrics" id="greek-metrics" aria-live="polite"></div><label class="control" for="greek-move">Try an underlying move <output id="greek-move-out"></output><input id="greek-move" type="range" min="-15" max="15" step="0.5" value="1"></label><p class="readout" id="greek-result" aria-live="polite"></p><p class="small">Compare Δ × move + ½Γ × move² with a full model repricing. Time and IV stay fixed. Short positions reverse the signs; contract positions also scale by quantity and multiplier. At zero time we show payoff only; smooth Greeks are unavailable.</p></div>
+<p class="no-js-example formula">Illustration: delta 0.60 suggests about +$0.60 per unit for a small $1 rise, before gamma, time and IV changes.</p>
+<p class="trap"><strong>Common misconception</strong>“Delta is the probability of profit.” It is a price sensitivity. Even probability-of-exercise interpretations need model assumptions; profit also depends on premium. Theta is not a fixed daily fee, and vega is per volatility point here: 25% → 26%, not a 1% relative increase.</p>
+<p class="source"><a href="https://www.optionseducation.org/advancedconcepts/delta">OIC · Delta</a> · <a href="https://www.optionseducation.org/advancedconcepts/gamma">Gamma</a> · <a href="https://www.optionseducation.org/advancedconcepts/theta">Theta</a> · <a href="https://www.optionseducation.org/advancedconcepts/vega">Vega</a>.</p>
+</section>
+
+<section class="lesson" id="parity" aria-labelledby="parity-title">
+<p class="eyebrow">05 / TWO ROUTES, ONE PAYOFF</p><h2 id="parity-title">Calls and puts are connected.</h2>
+<p class="idea">A long call plus a short put, with matching strike and expiry, pays underlying price minus strike at expiration. That is the payoff of a forward purchase.</p>
+<p class="why"><strong>Why it matters.</strong> For European options with matching terms, put–call parity links the two premiums to financing and dividends. It is a useful consistency check across prices.</p>
+<p class="formula">C − P = S e<sup>−qT</sup> − K e<sup>−rT</sup> = e<sup>−rT</sup>(F − K)</p>
+<p class="small">S = spot, K = strike, T = years, r = interest rate, q = continuous dividend yield, F = forward price. Use prices from the same instant and contracts with the same settlement terms.</p>
+<div class="lab js-only"><div class="lab-head"><h3>Move the cost of carry</h3><span>ILLUSTRATIVE · ONE YEAR</span></div><label class="control" for="parity-rate">Annual interest rate <output id="parity-rate-out"></output><input id="parity-rate" type="range" min="0" max="8" step="0.25" value="3"></label><div class="metrics" id="parity-metrics" aria-live="polite"></div><p class="readout" id="parity-result"></p><p class="small">Fixed inputs: spot = strike = $100, volatility = 20%, dividend yield = 0. Prices are generated by the model, so they satisfy its parity identity.</p></div>
+<p class="no-js-example formula">Illustration: at zero rates and dividends, spot $103 and strike $100 imply C − P = $3.</p>
+<p class="trap"><strong>Common misconception</strong>“Every parity gap is free money.” Bid/ask spreads, fees, borrowing constraints, stale quotes and early exercise matter. The equality above is not an exact valuation identity for American options.</p>
+<p class="source"><a href="https://www.optionseducation.org/advancedconcepts/put-call-parity">OIC · Put–call parity</a>.</p>
+</section>
+
+<section class="lesson" id="surface" aria-labelledby="surface-title">
+<p class="eyebrow">06 / UNCERTAINTY HAS A SHAPE</p><h2 id="surface-title">There is no single IV for a market.</h2>
+<p class="idea">Each strike and expiration can imply a different volatility. Across strikes you see skew or a smile; across expirations you see the term structure.</p>
+<p class="why"><strong>Why it matters.</strong> Comparing two options by premium alone confuses different strikes and maturities. A near-term event may raise short-dated IV even when longer-dated IV changes little.</p>
+<div class="lab js-only"><div class="lab-head"><h3>Explore a volatility surface</h3><span>SCHEMATIC · NOT MARKET DATA</span></div><div class="controls two"><label class="control">Downside skew <output id="surface-skew-out"></output><input id="surface-skew" type="range" min="0" max="12" value="6"></label><label class="control">Near-term event<select id="surface-event"><option value="0">No added event</option><option value="1">Add event variance</option></select></label></div><div class="table-scroll"><table class="heat-table" id="surface-table"><caption>Annual IV (%) · select an expiry row to inspect its strike slice. Darker = higher IV.</caption></table></div><svg class="chart" id="surface-chart" viewBox="0 0 620 270" role="img" aria-label="Selected expiry implied volatility across strike divided by forward"></svg><p class="readout" id="surface-result" aria-live="polite"></p><p class="small">The columns use strike / forward, not dollars. Event mode adds the same illustrative total variance to each expiry, so its annualized effect is strongest in the shortest one. This sketch is not calibrated or guaranteed free of arbitrage.</p></div>
+<p class="no-js-example formula">Illustration: 15-day ATM IV of 32% and 90-day ATM IV of 23% can describe different event exposure, not a contradiction.</p>
+<details><summary>Comparisons need matching definitions</summary><p>Realized volatility summarizes past price changes; IV comes from current option prices. Match horizons before comparing them. A constant-maturity estimate often interpolates total variance (IV² × time) between expiries bracketing the target, rather than averaging IV directly.</p><p>IV rank locates today’s IV within a historical low-to-high range. IV percentile counts the share of historical observations below (or at/below) today’s IV. They differ, and ties, lookback windows and missing dates affect the answer.</p></details>
+<p class="trap"><strong>Common misconception</strong>“Higher put IV proves the market will fall.” Skew also reflects insurance demand and the price of tail risk. Sparse strikes, wide spreads and stale prices can distort the surface you think you see.</p>
+<p class="source"><a href="https://www.optionseducation.org/referencelibrary/faq/technical-information">OIC · Volatility and skew</a> · <a href="https://cdn.cboe.com/resources/vix/vixwhite.pdf">Cboe · Time and variance in the VIX methodology</a>.</p>
+</section>
+
+<section class="lesson" id="market" aria-labelledby="market-title">
+<p class="eyebrow">07 / FROM ORDER TO REPORTED TRADE</p><h2 id="market-title">One market, many venues.</h2>
+<p class="idea">An options exchange matches orders. OPRA distributes consolidated options quotes and trade reports. OCC clears listed options and manages the resulting obligations.</p>
+<p class="why"><strong>Why it matters.</strong> The national best bid and offer (NBBO) combines the highest displayed bid and lowest displayed offer across venues for a contract. A quote is an offer to trade at a moment, not evidence that a trade occurred.</p>
+<div class="lab"><div class="lab-head"><h3>Assemble a best market</h3><span>ILLUSTRATIVE QUOTES</span></div><table><caption>Same contract, same observation time. Prices per unit; displayed size in contracts.</caption><thead><tr><th>Venue</th><th>Bid × size</th><th>Ask × size</th></tr></thead><tbody><tr><td>A</td><td>$2.10 × 12</td><td>$2.30 × 8</td></tr><tr><td>B</td><td>$2.15 × 5</td><td>$2.25 × 3</td></tr><tr><td>C</td><td>$2.05 × 20</td><td>$2.20 × 6</td></tr></tbody></table><p class="readout">NBBO: <strong>$2.15 bid / $2.20 ask</strong>. The best two prices come from different venues. A larger order may need more liquidity than the displayed size.</p></div>
+<p class="small">Some orders interact with an auction that invites price improvement. A cross brings together paired buying and selling interest under exchange rules. Neither mechanism guarantees that a simple “hit bid / lift ask” story explains the print.</p>
+<p class="trap"><strong>Common misconception</strong>“The consolidated feed is the entire order book.” It does not reveal all hidden liquidity, an investor’s portfolio, or the motivation behind an order.</p>
+<p class="source"><a href="https://www.opraplan.com/">OPRA · Consolidated options information</a> · <a href="https://www.theocc.com/company-information/what-is-occ">OCC · The clearing role</a> · <a href="https://www.cboe.com/markets/us/options/trading/complex-orders">Cboe · Auction and complex-order handling</a>.</p>
+</section>
+
+<section class="lesson" id="packages" aria-labelledby="packages-title">
+<p class="eyebrow">08 / THE UNIT OF INTENT</p><h2 id="packages-title">A leg is not the whole position.</h2>
+<p class="idea">A complex order trades several legs as a package with a net price. Each reported leg is only one part of its economics.</p>
+<p class="why"><strong>Why it matters.</strong> Treating every call sale as a standalone bearish bet can reverse the interpretation of a spread. A stock leg may also sit outside the options tape.</p>
+<div class="two"><article class="card"><h3>Illustrative call spread</h3><p>Buy one 100 call for $4.00. Sell one 110 call for $1.50. Net debit: $250 with a 100× multiplier. At expiration, maximum loss is $250; maximum profit is $750. Both legs share expiry and deliverable.</p><a class="small" id="package-preset" href="#payoff">Build this spread in the payoff lab ↑</a></article><article class="card"><h3>What a print’s condition tells you</h3><p>OPRA condition identifiers distinguish reporting situations such as auctions, crosses, multi-leg executions, late reports and cancellations. Consult the current specification; a downstream numeric encoding need not be OPRA’s native identifier.</p></article></div>
+<p class="small">Condition flags describe execution context, not a customer’s thesis. A sweep or intermarket sweep order concerns routing and execution; it does not reveal private information. Matching nearby prints by time alone cannot prove they belong to one order. Corrections and cancellations must be reconciled before totaling activity.</p>
+<p class="trap"><strong>Common misconception</strong>“Add up every leg’s premium and call it conviction.” Gross leg premium differs from net package cost. Counting a package and its legs again also counts the same activity twice.</p>
+<p class="source"><a href="https://www.cboe.com/markets/us/options/trading/complex-orders">Cboe · Complex orders and net-price auctions</a> · <a href="https://cdn.opraplan.com/documents/OPRA_Pillar_Output_Specification.pdf">OPRA · Official message and trade-condition specification</a>.</p>
+</section>
+
+<section class="lesson" id="tape" aria-labelledby="tape-title">
+<p class="eyebrow">09 / A PRINT IS AN OBSERVATION</p><h2 id="tape-title">Who initiated the trade?</h2>
+<p class="idea">Every trade has a buyer and a seller. “Buy-initiated” means the buyer is inferred to have demanded liquidity. It does not mean the seller is absent.</p>
+<p class="why"><strong>Why it matters.</strong> A quote rule compares the trade with the prevailing midpoint. A tick test compares it with the last different trade price. A Lee–Ready-style hybrid uses quote information, then a tick test for midpoint ambiguity.</p>
+<div class="lab js-only"><div class="lab-head"><h3>Classify the tape</h3><span id="tape-count"></span></div><h3 id="tape-name"></h3><p class="small" id="tape-context"></p><div class="tape-track"><span class="active">① Quote before fill</span><span>② Trade executes</span><span id="tape-later">③ Quote later</span></div><div class="quote-strip"><div><small id="tape-quote-label">BID AT FILL</small><strong id="tape-bid"></strong></div><div><small>TRADE PRICE</small><strong id="tape-price"></strong></div><div><small>ASK</small><strong id="tape-ask"></strong></div></div><p class="small" id="tape-previous"></p><div class="buttons"><button id="tape-clock" aria-pressed="false">Show the later quote</button></div><p>What can you reasonably infer at the fill?</p><div class="buttons" aria-label="Classify this trade"><button data-answer="buy">Likely buyer-initiated</button><button data-answer="sell">Likely seller-initiated</button><button data-answer="unknown">Keep it unresolved</button></div><div class="readout tape-answer" id="tape-answer" aria-live="polite">Choose an interpretation, then compare the rules.</div><div class="buttons"><button id="tape-prev">← Previous case</button><button id="tape-next">Next case →</button></div></div>
+<p class="no-js-example formula">Illustration: quote $2.00 / $2.40, trade $2.20, last different trade $2.10. The quote rule is unresolved; the tick test infers a buy. Neither identifies the trader.</p>
+<p class="small">The original Lee–Ready work studied historical equity reporting delays. Its time adjustment is not a universal delay to apply to modern options feeds. Align timestamps and validate the convention. An unchanged quote can be old without being wrong; age alone cannot establish validity.</p>
+<p class="trap"><strong>Common misconception</strong>“A trade near the ask is a new bullish bet.” It might close a short position, hedge another asset, or belong to a package. Midpoint fills, stale or crossed quotes, late reports and negotiated trades weaken side inference.</p>
+<p class="source"><a href="https://onlinelibrary.wiley.com/doi/10.1111/j.1540-6261.1991.tb02683.x">Lee & Ready (1991) · Inferring trade direction</a>.</p>
+</section>
+
+<section class="lesson" id="interest" aria-labelledby="interest-title">
+<p class="eyebrow">10 / FLOW AND STOCK</p><h2 id="interest-title">Volume counts activity.<br>Open interest counts what remains.</h2>
+<p class="idea">Volume accumulates trades during a session. Open interest counts outstanding contracts, with one long and one short making one open contract.</p>
+<p class="why"><strong>Why it matters.</strong> A contract can trade repeatedly without increasing open interest. New OI is determined through clearing, not by adding the day’s prints to yesterday’s OI.</p>
+<div class="lab js-only"><div class="lab-head"><h3>Trade ten contracts at a time</h3><span>ILLUSTRATIVE · STARTING OI 80</span></div><div class="metrics" id="oi-metrics" aria-live="polite"></div><div class="buttons"><button data-oi="open">Both sides open +10</button><button data-oi="transfer">One opens, one closes</button><button data-oi="close">Both sides close −10</button><button id="oi-reset">Reset session</button></div><p class="readout" id="oi-result" aria-live="polite"></p><p class="small">This omniscient teaching ledger knows both sides’ opening/closing instructions. The public tape generally does not. It omits exercise, expiry and other clearing adjustments. The starting OI remains the published reference during the session.</p></div>
+<p class="no-js-example formula">Illustration: opening OI 80; 10 contracts trade with both sides opening → volume 10, OI 90 after clearing. Another 10 trade with one side closing and the other opening → volume 20, OI still 90.</p>
+<p class="trap"><strong>Common misconception</strong>“Volume above OI proves fresh buying.” Volume can exceed OI through turnover. Even rising OI alone does not identify whether customers or dealers own the long side, or whether either portfolio is bullish.</p>
+<p class="source"><a href="https://www.optionseducation.org/referencelibrary/faq/general-information">OIC · How opening and closing trades change OI</a>.</p>
+</section>
+
+<section class="lesson" id="settlement" aria-labelledby="settlement-title">
+<p class="eyebrow">11 / READ THE FINE PRINT FIRST</p><h2 id="settlement-title">The last trade and the final value<br>can happen at different times.</h2>
+<p class="idea">Cash settlement pays an amount derived from the settlement value. Physical settlement delivers the underlying. AM and PM settlement refer to how the final reference value is determined.</p>
+<p class="why"><strong>Why it matters.</strong> Two contracts tracking similar equity exposure can have different exercise rights, sizes and settlement clocks. The expiration date alone is not enough.</p>
+<div class="table-scroll"><table><caption>Standard contract comparison · special or adjusted terms can differ.</caption><thead><tr><th>Contract</th><th>Exercise</th><th>Delivery</th><th>Reference / multiplier</th></tr></thead><tbody><tr><td>SPX · traditional</td><td>European</td><td>Cash · AM</td><td>Full index · $100 per point</td></tr><tr><td>SPXW · PM series</td><td>European</td><td>Cash · PM</td><td>Full index · $100 per point</td></tr><tr><td>XSP</td><td>European</td><td>Cash · PM</td><td>1/10 of SPX index · $100 per point</td></tr><tr><td>SPY</td><td>American</td><td>ETF shares</td><td>ETF price · usually 100 shares</td></tr></tbody></table></div>
+<div class="lab js-only"><div class="lab-head"><h3>Follow the settlement clock</h3><span>SCHEMATIC · NOT A CALENDAR</span></div><div class="buttons" aria-label="Settlement examples"><button data-settlement="am" aria-pressed="true">SPX · AM</button><button data-settlement="pm" aria-pressed="false">SPXW / XSP · PM</button><button data-settlement="shares" aria-pressed="false">SPY · shares</button></div><div id="settlement-timeline" class="timeline"></div><p class="readout" id="settlement-result" aria-live="polite"></p></div>
+<p class="no-js-example formula">Illustration: a cash-settled 100-strike call with settlement value 103 and a $100 multiplier pays $300. For a physically settled 100-strike call, exercise instead exchanges $10,000 for 100 shares.</p>
+<p class="small">For AM SPX, the special settlement calculation uses component opening prices, which need not occur simultaneously. It need not match the displayed index at one instant. PM series use closing reference prices. Check the exact series, last trading time, settlement method and exchange holiday calendar. Holidays and early closes change schedules; do not infer a real expiry from this diagram. Near expiry, hours remaining can matter more than the rounded day count.</p>
+<p class="trap"><strong>Common misconception</strong>“All SPX-chain contracts expire the same way.” An option chain can contain both AM and PM series. Neither an ordinary closing quote nor an after-hours underlying price automatically becomes the contractual settlement value.</p>
+<p class="source"><a href="https://www.cboe.com/tradable-products/sp-500/spx-options/spx-specifications">Cboe · SPX specifications</a> · <a href="https://www.cboe.com/tradable_products/sp_500/spx_weekly_options/specifications/">Cboe · SPX, XSP and SPY comparison and holiday conventions</a>.</p>
+</section>
+
+<section class="lesson" id="exercise" aria-labelledby="exercise-title">
+<p class="eyebrow">12 / WHEN A RIGHT BECOMES DELIVERY</p><h2 id="exercise-title">Assignment changes what you hold.</h2>
+<p class="idea">Early exercise turns an American option into its contractual delivery before expiry. The assigned seller must perform even if that timing is inconvenient.</p>
+<p class="why"><strong>Why it matters.</strong> Exercise gives up remaining extrinsic value. Dividend timing, financing and a deep in-the-money position can change the incentive. A short option can be assigned independently of another leg in a spread.</p>
+<div class="two"><article class="card"><h3>Illustration · compare the choices</h3><p>A 50 call with stock at $55 has $5 intrinsic value. If it can be sold for $5.40, exercising gives up $0.40 per unit of extrinsic value. Actual executable prices and costs matter; the displayed midpoint may not be available.</p></article><article class="card"><h3>Illustration · near the strike</h3><p>A stock closes at $100.02 with a 100 strike nearby. Later news moves it below $100. Exercise instructions and deadlines can affect whether shares appear in the account. The closing price alone cannot settle the assignment question.</p></article></div>
+<p class="small">This uncertainty around a strike at expiry is often called pin risk. Automatic exercise procedures do not remove contrary instructions or broker-specific cutoffs. A broker can set an earlier customer deadline. Cash-settled European options avoid early share assignment but retain settlement-value risk.</p>
+<p class="trap"><strong>Common misconception</strong>“A spread’s two legs always disappear together.” One leg can be assigned while the other remains open. Expiration payoff bounds assume the position is carried through consistently; intervening stock exposure and funding needs can differ.</p>
+<p class="source"><a href="https://www.optionseducation.org/optionsoverview/exercising-options">OIC · Exercise and assignment</a> · <a href="https://www.optionseducation.org/referencelibrary/faq/options-exercise">OIC · Exercise procedures and deadlines</a>.</p>
+</section>
+
+<section class="lesson" id="hedging" aria-labelledby="hedging-title">
+<p class="eyebrow">13 / FEEDBACK, WITH ASSUMPTIONS</p><h2 id="hedging-title">As delta changes,<br>the hedge may need to change.</h2>
+<p class="idea">A delta-neutral hedge offsets an option position’s local exposure with the underlying. Gamma describes how that exposure changes as the underlying moves.</p>
+<p class="why"><strong>Why it matters.</strong> A long-gamma position, repeatedly hedged, tends to sell underlying after a rise and buy after a fall. A short-gamma position does the reverse, under the same assumptions.</p>
+<div class="lab js-only"><div class="lab-head"><h3>Rebalance a hypothetical hedge</h3><span>ILLUSTRATIVE · 10 CALLS × 100</span></div><div class="controls two"><label class="control">Assumed dealer position<select id="hedge-side"><option value="1">Long 10 calls</option><option value="-1">Short 10 calls</option></select></label><label class="control">Underlying moves from $100 to… <output id="hedge-spot-out"></output><input id="hedge-spot" type="range" min="85" max="115" value="105"></label></div><div class="metrics" id="hedge-metrics" aria-live="polite"></div><div class="hedge-bar" aria-hidden="true"><i id="hedge-fill"></i></div><p class="readout" id="hedge-result" aria-live="polite"></p><p class="small">European calls; strike $100, 30 days, 25% volatility, 0% rate and dividends. Hold time and IV fixed; offset model delta exactly, allowing fractional shares. No other positions or hedge instruments are included.</p></div>
+<p class="no-js-example formula">Illustration: if a long position’s share-equivalent delta rises from 400 to 470, a neutral hedge moves from short 400 shares to short 470. Sell 70 more shares.</p>
+<p class="trap"><strong>Common misconception</strong>“Open interest tells us the dealers’ gamma.” OI gives no owner-side inventory. Long calls and long puts both have positive gamma in this model; short positions reverse it. A dealer-gamma estimate needs position assumptions. “Walls,” “zero gamma” and “max pain” are model outputs, not guaranteed support, resistance or destination prices.</p>
+<p class="source"><a href="https://www.optionseducation.org/advancedconcepts/gamma">OIC · Gamma and changing delta</a>.</p>
+</section>
+
+<section class="lesson" id="evidence" aria-labelledby="evidence-title">
+<p class="eyebrow">14 / PUT THE PIECES TOGETHER</p><h2 id="evidence-title">Before the story, check the evidence.</h2>
+<p class="idea">A useful options read distinguishes what traded, what was inferred, and what remains unknown.</p>
+<p class="why"><strong>Why it matters.</strong> A large premium print can reflect a hedge, a closing trade, a spread or routine turnover. Calling it “unusual” also requires a baseline matched by instrument, time of day and observation window.</p>
+<div class="lab"><div class="lab-head"><h3>Three claims to take apart</h3><span>ILLUSTRATIVE CHECKPOINT</span></div>
+<details><summary>“Calls traded $60,000 in premium. That is $60,000 of bullish conviction.”</summary><p>Premium is price × quantity × multiplier. It does not disclose opening status, initiating side or the rest of the portfolio. A $12 option traded 50 times with a 100× multiplier gives $60,000 of gross premium even if those trades simply turn over existing positions.</p></details>
+<details><summary>“This morning’s snapshot shows what happened this morning.”</summary><p>Check when each quote or price was observed, and which session the volume and OI describe. A file collected today may contain yesterday’s closing observations. Repeated captures are not additional trading sessions. Missing quotes or OI are unknown, not zero.</p></details>
+<details><summary>“The backtest predicted it using the final corrected tape.”</summary><p>Ask whether those corrections were available at decision time. Future quotes, later revisions, tomorrow’s OI and hindsight-selected contracts can leak the future into the test. Store what was available then, and distinguish that result from a reconstruction using later information.</p></details>
+</div>
+<p class="formula">Contract → clock → quote quality → execution context → side estimate → position assumptions → interpretation.</p>
+<p class="trap"><strong>Common misconception</strong>“More decimal places mean more certainty.” A precise calculation can still rest on the wrong timestamp, incomplete coverage or an unsupported assumption. An unresolved answer is sometimes the most accurate one.</p>
+<p class="small">All calculations on this page run locally in your browser. The page has no live market feed. Public product details were checked in October 2026; use the linked exchange specifications for current contract terms.</p>
+<div class="end"><a href="#contract">↑ Start again with the contract</a><a href="index.html#stories">Explore the collection →</a></div>
+</section>
+</main></div>
+<footer>mechanism unfolded · Understand the pieces. Then read the whole.</footer>
+</body></html>

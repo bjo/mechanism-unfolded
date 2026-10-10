@@ -36,3 +36,9 @@ Eight foundation chapters with eleven interactive experiments: crank/four-stroke
 Run `node tests/car-mechanics.cjs`, `node tests/car-systems.cjs`, and `node tests/car-foundations.cjs`. For actual Three.js assembly verification, pass the path to the official Three.js 0.160.1 CommonJS build to the last test, optionally followed by a browser snapshot JSON. `car.html?chapter=5&audit=1` exposes read-only `data-audit` on the canvas. See [CAR-FOUNDATIONS.md](CAR-FOUNDATIONS.md) for sources, constraints and explicit simplifications; [CAR-DESIGN.md](CAR-DESIGN.md) records the original engine development.
 
 The watch chapter map continues to use its own curriculum catalog; this release does not change watch lessons or camera controls.
+
+## Options, unfolded
+
+[Options, unfolded](https://bjo.github.io/mechanism-unfolded/options.html) is an English-language guide with 14 lessons and eight interactive labs: payoff building, pricing and Greeks, put–call parity, volatility surfaces, trade classification, open interest, settlement and hedging. All lab observations and positions are illustrative. The European pricing model uses continuous dividend yield and a 365-day year; it does not model early exercise or live markets.
+
+Run `node tests/options.cjs` for calculation checks and `node tests/site-features.cjs` for homepage release switches and the collection count. Serve the repository root to inspect `options.html`; no build step or additional library is required.
