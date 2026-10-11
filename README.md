@@ -39,6 +39,6 @@ The watch chapter map continues to use its own curriculum catalog; this release 
 
 ## Options, unfolded
 
-[Options, unfolded](https://bjo.github.io/mechanism-unfolded/options.html) is a Korean-language guide with 14 lessons and eight interactive labs: payoff building, pricing and Greeks, put–call parity, volatility surfaces, trade classification, open interest, settlement and hedging. All lab observations and positions are illustrative. The European pricing model uses continuous dividend yield and a 365-day year; it does not model early exercise or live markets.
+[Options, unfolded](https://bjo.github.io/mechanism-unfolded/options.html) is a Korean-language guide with 18 lessons and twelve interactive labs: payoff building, premium decomposition, Black–Scholes/Black-76 comparison, bid/mid/ask IV inversion, Greeks and event repricing, put–call parity, smile/skew and event term structures, volatility surfaces, trade classification, open interest, settlement and hedging. All lab observations and positions are illustrative. The European pricing model uses continuous dividend yield and a 365-day year; it does not model early exercise or live markets.
 
 Run `node tests/options.cjs` for calculation checks and `node tests/site-features.cjs` for homepage release switches and the collection count. Serve the repository root to inspect `options.html`; no build step or additional library is required.

@@ -2,7 +2,7 @@
   'use strict';
   const M = OptionsMath, $ = id => document.getElementById(id);
   const number = (v, digits = 2) => v.toLocaleString('en-US', {minimumFractionDigits: digits, maximumFractionDigits: digits});
-  const money = v => (v < 0 ? '−' : '') + '$' + number(Math.abs(v));
+  const money = v => (v < -.005 ? '−' : '') + '$' + number(Math.abs(v));
   const value = id => Number($(id).value);
   const metric = (label, v, unit = '') => `<div class="metric"><span>${label}</span><strong>${v}</strong><small>${unit}</small></div>`;
   const listen = (ids, fn) => ids.forEach(id => $(id).addEventListener('input', fn));
@@ -92,10 +92,68 @@
     ['spot', 'strike', 'days', 'vol', 'rate', 'yield'].forEach(k => {const v = value('model-' + k); $('model-' + k + '-out').textContent = ['spot', 'strike'].includes(k) ? money(v) : k === 'days' ? v + '일' : number(v, k === 'rate' || k === 'yield' ? 2 : 0) + '%';});
     chart('pricing-chart', [{points: sample(40, 160, spot => M.blackScholes({...p, spot}).price)}, {points: sample(40, 160, spot => M.intrinsic(p.type, spot, p.strike))}], {xLabel: '현재 기초자산 가격 ($)', yLabel: '단위당 가치 ($)', point: [p.spot, g.price]});
     $('price-metrics').innerHTML = metric('모형 프리미엄', money(g.price), '단위당') + metric('내재가치', money(intrinsic), '지금 행사할 때의 가치') + metric('프리미엄 − 내재가치', money(g.price - intrinsic), '외재가치 부분');
+    const extrinsic = g.price - intrinsic;
+    $('price-breakdown').innerHTML = extrinsic >= 0 && g.price > 1e-8 ? `<span style="flex:${intrinsic}">내재 ${money(intrinsic)}</span><span style="flex:${extrinsic}">외재 ${money(extrinsic)}</span>` : '';
+    $('price-breakdown-note').textContent = extrinsic < 0 ? `외재가치 ${money(extrinsic)}: 조기 행사할 수 없는 유럽형에서는 금리·배당 때문에 즉시 행사 가치보다 프리미엄이 작을 수 있습니다. 양수 누적 막대로 표시하지 않습니다.` : g.price < 1e-8 ? '프리미엄이 0이므로 표시할 가격 막대가 없습니다.' : '막대는 현재 프리미엄의 분해입니다. IV 몫과 시간 몫을 따로 더한 것이 아닙니다. 작은 부분의 라벨은 위 수치로 확인하세요.';
     greeks(); invert();
   }
   listen(['model-type', 'model-spot', 'model-strike', 'model-days', 'model-vol', 'model-rate', 'model-yield'], pricing);
   listen(['greek-move'], greeks); listen(['iv-price'], invert);
+
+  function compareModels() {
+    const rate = value('compare-rate') / 100, yieldRate = value('compare-yield') / 100;
+    const p = {type: 'call', spot: 100, strike: 100, years: 1, vol: .2, rate, yieldRate};
+    const forward = p.spot * Math.exp(rate - yieldRate), spotModel = M.blackScholes(p), forwardModel = M.black76({...p, forward});
+    const wrong = M.black76({...p, forward: p.spot}).price;
+    $('compare-rate-out').textContent = number(rate * 100, 1) + '%';
+    $('compare-yield-out').textContent = number(yieldRate * 100, 1) + '%';
+    $('model-comparison').innerHTML = metric('선도가격 F', money(forward), '현물에서 보유 비용 반영') + metric('Black–Scholes', money(spotModel.price), '현물 S = $100 사용') + metric('Black-76', money(forwardModel.price), '연결된 F 사용');
+    $('model-comparison-result').innerHTML = `두 모형의 가격 차이: <strong>${money(spotModel.price - forwardModel.price)}</strong>. F 자리에 현물 $100을 그대로 넣으면 ${money(wrong)}입니다. ${Math.abs(rate - yieldRate) < 1e-10 ? '지금은 r = q여서 S = F입니다.' : '지금은 S와 F가 달라서 이 대입은 같은 계약을 비교한 것이 아닙니다.'}<br>현물 기준 델타 ${number(spotModel.delta, 4)}, 선도 기준 델타 ${number(forwardModel.delta, 4)}. 가격이 같아도 민감도의 기준 변수는 다릅니다.`;
+  }
+  listen(['compare-rate', 'compare-yield'], compareModels);
+
+  function quoteIV() {
+    const mid = value('quote-mid'), width = value('quote-width');
+    const p = {type: 'call', spot: 100, strike: 100, years: .5, rate: 0, yieldRate: 0};
+    const quotes = [mid - width / 2, mid, mid + width / 2], ivs = quotes.map(price => M.impliedVol(price, p));
+    $('quote-mid-out').textContent = money(mid); $('quote-width-out').textContent = money(width);
+    $('quote-iv-metrics').innerHTML = quotes.map((price, i) => metric(['매수호가 IV', '중간값 IV', '매도호가 IV'][i], number(ivs[i] * 100, 2) + '%', `프리미엄 ${money(price)}`)).join('');
+    chart('iv-chart', [{points: sample(1, 60, v => M.blackScholes({...p, vol: v / 100}).price)}, {points: [[1, mid], [60, mid]]}], {xLabel: '연율 변동성 (%)', yLabel: '콜 프리미엄 ($)', point: [ivs[1] * 100, mid]});
+    const vega = M.blackScholes({...p, vol: ivs[1]}).vega;
+    $('quote-iv-result').innerHTML = `호가가 만드는 IV 범위: <strong>${number(ivs[0] * 100, 2)}% ~ ${number(ivs[2] * 100, 2)}%</strong>. 차이는 ${number((ivs[2] - ivs[0]) * 100, 2)}%p입니다. 중간값에서 베가는 $${number(vega, 3)}/%p이므로 $0.10의 작은 가격 차이는 IV 약 ${number(.1 / vega, 2)}%p 차이와 대응합니다. 호가 폭은 불확실성의 통계적 신뢰구간이 아니라 거래 가격 차이입니다.`;
+  }
+  listen(['quote-mid', 'quote-width'], quoteIV);
+
+  function scenario() {
+    const spot = value('scenario-spot'), days = value('scenario-days'), vol = value('scenario-vol') / 100;
+    const p = {type: 'call', spot: 100, strike: 100, years: 30 / 365, vol: .5, rate: 0};
+    const initial = M.blackScholes(p), spotOnly = M.blackScholes({...p, spot});
+    const timed = M.blackScholes({...p, spot, years: (30 - days) / 365});
+    const final = M.blackScholes({...p, spot, years: (30 - days) / 365, vol});
+    const pnl = (final.price - initial.price) * 100;
+    $('scenario-spot-out').textContent = money(spot); $('scenario-days-out').textContent = days + '일'; $('scenario-vol-out').textContent = number(vol * 100, 0) + '%';
+    $('scenario-metrics').innerHTML = metric('최초 프리미엄', money(initial.price * 100), '1계약 지불액') + metric('이후 모형 가치', money(final.price * 100), '남은 ' + (30 - days) + '일') + metric('평가손익', money(pnl), '수수료·호가 차이 제외');
+    const effects = [['주가 변경', spotOnly.price - initial.price], ['시간 경과', timed.price - spotOnly.price], ['IV 변경', final.price - timed.price]];
+    $('scenario-table').innerHTML = '<caption>순서에 따른 재평가 기여도 · 계약당 달러</caption><thead><tr><th>단계</th><th>직전 단계 대비 변화</th></tr></thead><tbody>' + effects.map(([label, v]) => `<tr><td>${label}</td><td>${money(v * 100)}</td></tr>`).join('') + `<tr><th>합계</th><td>${money(pnl)}</td></tr></tbody>`;
+    const move = spot - 100;
+    const approximation = (initial.delta * move + .5 * initial.gamma * move ** 2 + initial.theta * days + initial.vega * (vol - .5) * 100) * 100;
+    $('scenario-result').innerHTML = `${spot > 100 && pnl < 0 ? '<strong>주가는 올랐지만 콜은 손실입니다.</strong> ' : ''}초기 그릭스로 구한 근사손익은 ${money(approximation)}, 완전 재평가는 ${money(pnl)}입니다. ${days === 30 ? '이미 만기이므로 이후 IV를 바꿔도 지급액은 변하지 않습니다.' : 'IV 변화와 시간 경과가 주가 효과를 얼마나 상쇄하는지 비교하세요.'}`;
+  }
+  listen(['scenario-spot', 'scenario-days', 'scenario-vol'], scenario);
+
+  function termStructure() {
+    const baseVol = value('term-base') / 100, eventDay = value('term-day'), eventMove = value('term-move') / 100;
+    const at = days => M.eventVol({baseVol, days, eventDay, eventMove});
+    $('term-base-out').textContent = number(baseVol * 100, 0) + '%'; $('term-day-out').textContent = eventDay + '일'; $('term-move-out').textContent = number(eventMove * 100, 0) + '%';
+    const points = Array.from({length: 120}, (_, i) => [i + 1, at(i + 1).vol * 100]);
+    // Show both sides of the known event boundary, rather than smearing the jump across a day.
+    if (eventDay > 1) points.splice(eventDay - 1, 0, [eventDay - .001, baseVol * 100]);
+    chart('term-chart', [{points}, {points: [[1, baseVol * 100], [120, baseVol * 100]]}], {xLabel: '만기까지 달력일', yLabel: '연율 IV (%)', point: [30, at(30).vol * 100], yMin: 0});
+    $('term-table').innerHTML = '<caption>연율 IV와 만기까지의 총변동 규모를 비교하세요.</caption><thead><tr><th>만기</th><th>이벤트 포함</th><th>연율 IV</th><th>σ√T</th></tr></thead><tbody>' + [10, 30, 60, 90, 120].map(d => `<tr><td>${d}일</td><td>${d >= eventDay && eventMove > 0 ? '포함' : '없음'}</td><td>${number(at(d).vol * 100, 2)}%</td><td>${number(at(d).move * 100, 2)}%</td></tr>`).join('') + '</tbody>';
+    const fwd = M.forwardVol(at(30).vol, 30 / 365, at(90).vol, 90 / 365);
+    $('term-result').innerHTML = `30→90일 구간의 선도 변동성: <strong>${number(fwd * 100, 2)}%</strong>. ${eventMove === 0 ? '이벤트 분산이 없으므로 모든 구간이 평상시 변동성과 같습니다.' : eventDay <= 30 ? '이벤트가 30일과 90일 총분산 양쪽에 포함되어 차감 시 사라집니다.' : eventDay <= 90 ? '이벤트가 30일 이후·90일 이전 구간에 포함되어 평상시보다 높습니다.' : '이벤트가 90일 이후여서 이 구간에는 들어 있지 않습니다.'}`;
+  }
+  listen(['term-base', 'term-day', 'term-move'], termStructure);
 
   function parity() {
     const rate = value('parity-rate') / 100, p = {spot: 100, strike: 100, years: 1, vol: .2, rate};
@@ -109,17 +167,27 @@
   let surfaceDays = 30;
   const expiries = [15, 30, 60, 120], ratios = [.8, .9, 1, 1.1, 1.2];
   function surfaceIV(ratio, days) {
-    const base = .2 + .025 * days / 120 + value('surface-skew') / 100 * (1 - ratio) / .2 + .16 * (ratio - 1) ** 2;
+    const base = .2 + .025 * days / 120 + value('surface-skew') / 100 * (1 - ratio) / .2 + value('surface-curve') / 100 * ((ratio - 1) / .2) ** 2;
     return Math.sqrt(base * base + value('surface-event') * .006 / (days / 365)) * 100;
   }
   function surface() {
+    $('surface-curve-out').textContent = value('surface-curve') + '%p (양쪽 날개)';
     $('surface-skew-out').textContent = value('surface-skew') + '%p (0.80배 지점)';
     $('surface-table').innerHTML = '<caption>연율 IV (%) · 만기 행을 선택해 행사가격별 곡선을 살펴보세요. 진할수록 IV가 높습니다.</caption><thead><tr><th>남은 일수 / K÷F</th>' + ratios.map(r => `<th>${r.toFixed(2)}×</th>`).join('') + '</tr></thead><tbody>' + expiries.map(d => `<tr class="${d === surfaceDays ? 'selected' : ''}"><th><button data-expiry="${d}" aria-pressed="${d === surfaceDays}" aria-label="${d}일 만기 살펴보기">${d}일</button></th>` + ratios.map(r => {const v = surfaceIV(r, d); return `<td style="background:rgba(40,103,107,${Math.min(.42, (v - 5) / 120)})">${number(v, 1)}%</td>`;}).join('') + '</tr>').join('') + '</tbody>';
     $('surface-table').querySelectorAll('[data-expiry]').forEach(b => b.onclick = () => {surfaceDays = Number(b.dataset.expiry); surface(); $('surface-table').querySelector(`[data-expiry="${surfaceDays}"]`).focus({preventScroll: true});});
-    chart('surface-chart', [{points: sample(.8, 1.2, ratio => surfaceIV(ratio, surfaceDays))}], {xLabel: '행사가격 / 선도가격', yLabel: `${surfaceDays}일 만기의 연율 IV (%)`, yMin: 0, yMax: 60, height: 270, point: [1, surfaceIV(1, surfaceDays)]});
+    const ymax = Math.max(60, Math.ceil(Math.max(...ratios.map(r => surfaceIV(r, surfaceDays))) / 10) * 10);
+    chart('surface-chart', [{points: sample(.8, 1.2, ratio => surfaceIV(ratio, surfaceDays))}], {xLabel: '행사가격 / 선도가격', yLabel: `${surfaceDays}일 만기의 연율 IV (%)`, yMin: 0, yMax: ymax, height: 270, point: [1, surfaceIV(1, surfaceDays)]});
     $('surface-result').innerHTML = `<strong>${surfaceDays}일 만기의 곡선:</strong> 등가격(K = F) IV ${number(surfaceIV(1, surfaceDays), 1)}%. 선도가격의 0.80배 지점 ${number(surfaceIV(.8, surfaceDays), 1)}%, 1.20배 지점 ${number(surfaceIV(1.2, surfaceDays), 1)}%. 표의 1.00배 열을 세로로 비교하면 등가격 IV의 기간구조를 볼 수 있습니다.`;
   }
-  listen(['surface-skew', 'surface-event'], surface);
+  listen(['surface-skew', 'surface-curve', 'surface-event'], () => {document.querySelectorAll('[data-surface-shape]').forEach(b => b.setAttribute('aria-pressed', 'false')); surface();});
+  document.querySelectorAll('[data-surface-shape]').forEach(b => b.addEventListener('click', () => {
+    const name = b.dataset.surfaceShape;
+    $('surface-skew').value = name === 'skew' ? 6 : 0;
+    $('surface-curve').value = name === 'flat' ? 0 : name === 'smile' ? 8 : 2;
+    $('surface-event').value = 0;
+    document.querySelectorAll('[data-surface-shape]').forEach(button => button.setAttribute('aria-pressed', String(button === b)));
+    surface();
+  }));
 
   const cases = [
     {name: '매도호가에 체결된 뒤 호가가 이동합니다', bid: 2, ask: 2.4, price: 2.4, previous: 2.3, later: [2.5, 2.7], answer: 'buy', context: '일반 단일 레그 체결입니다. 시각이 정렬된 호가가 체결 직전에 관측되었습니다.', explanation: '매도호가에 체결되었으므로 두 규칙 모두 매수를 추정합니다. 이후 호가의 중간값은 체결가보다 높아 호가 규칙의 분류가 뒤집힙니다. 미래 호가를 체결 당시 호가 대신 사용할 수는 없습니다.'},
@@ -192,7 +260,7 @@
   }
   listen(['hedge-spot', 'hedge-side'], hedge);
 
-  payoff(); pricing(); parity(); surface(); tape(); interest(); settlement('am'); hedge();
+  payoff(); pricing(); compareModels(); quoteIV(); scenario(); termStructure(); parity(); surface(); tape(); interest(); settlement('am'); hedge();
   document.documentElement.classList.add('js-ready');
   const navLinks = [...document.querySelectorAll('.nav-links a')];
   const observer = new IntersectionObserver(entries => {

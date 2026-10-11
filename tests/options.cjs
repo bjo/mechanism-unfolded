@@ -44,4 +44,42 @@ assert.equal(M.quoteRule(2, 2, 2), 'unknown'); assert.equal(M.quoteRule(2, NaN, 
 assert.equal(M.tickRule(2.2, 2.1), 'buy'); assert.equal(M.tickRule(2.2, 2.3), 'sell'); assert.equal(M.tickRule(2.2, null), 'unknown');
 near(M.oiChange(true, true, 10), 10); near(M.oiChange(false, false, 10), -10);
 near(M.oiChange(true, false, 10), 0); near(M.oiChange(false, true, 10), 0);
-console.log(`PASS ${checks} numerical checks: payoffs, benchmark prices/Greeks, finite-difference sensitivities, dividend parity, IV inversion; expiry/invalid-input boundaries, quote/tick rules and OI transitions.`);
+// Independent Black-76 benchmarks computed with Python math.erf, not this CDF.
+const future = {forward: 105, strike: 100, years: .75, vol: .3, rate: .04};
+near(M.black76({...future, type: 'call'}).price, 12.886847900627645, 1e-10);
+near(M.black76({...future, type: 'put'}).price, 8.034620232885091, 1e-10);
+for (const type of ['call', 'put']) for (const rate of [-.01, 0, .06]) for (const yieldRate of [0, .03]) {
+  const a = {...p, type, rate, yieldRate, years: .75};
+  const forward = a.spot * Math.exp((rate - yieldRate) * a.years);
+  const b = M.black76({...a, forward});
+  near(b.price, M.blackScholes(a).price, 1e-10);
+  near(b.delta * Math.exp((rate - yieldRate) * a.years), M.blackScholes(a).delta, 1e-10);
+  const h = .00001;
+  near(b.rho, (M.black76({...a, forward, rate: rate + h}).price - M.black76({...a, forward, rate: rate - h}).price) / (2 * h) / 100, 1e-7);
+}
+near(M.black76({...future, years: 0}).price, 5);
+near(M.black76({...future, vol: 0}).price, 5 * Math.exp(-.04 * .75));
+assert.throws(() => M.black76({...future, forward: 0}), RangeError);
+assert.throws(() => M.black76({...future, forward: -10}), RangeError);
+// Event variance is absent before the event and included exactly once thereafter.
+const ev = days => M.eventVol({baseVol: .2, days, eventDay: 20, eventMove: .06});
+near(ev(10).vol, .2); near(ev(19).variance, .04 * 19 / 365);
+near(ev(20).variance, .04 * 20 / 365 + .0036);
+near(ev(30).variance, .04 * 30 / 365 + .0036);
+near(M.forwardVol(ev(30).vol, 30 / 365, ev(90).vol, 90 / 365), .2);
+near(M.eventVol({baseVol: .2, days: 30, eventDay: 20, eventMove: 0}).vol, .2);
+assert.ok(ev(30).vol > ev(90).vol && ev(30).move < ev(90).move);
+assert.equal(M.forwardVol(.8, .5, .1, 1), null);
+assert.equal(M.forwardVol(.2, 1, .2, 1), null);
+assert.equal(M.forwardVol(NaN, .5, .2, 1), null);
+assert.throws(() => M.eventVol({baseVol: .2, days: 0, eventDay: 1}), RangeError);
+// Quote ordering and repricing: a favorable stock move can lose to an IV decline.
+const quoteInputs = {type: 'call', spot: 100, strike: 100, years: .5, rate: 0};
+const ivs = [5.5, 6, 6.5].map(price => M.impliedVol(price, quoteInputs));
+assert.ok(ivs[0] < ivs[1] && ivs[1] < ivs[2]);
+ivs.forEach((vol, i) => near(M.blackScholes({...quoteInputs, vol}).price, [5.5, 6, 6.5][i]));
+const entry = M.blackScholes({...p, years: 30 / 365, vol: .5, rate: 0}).price;
+const after = M.blackScholes({...p, spot: 103, years: 29 / 365, vol: .25, rate: 0}).price;
+assert.ok(after < entry);
+near(M.blackScholes({...p, spot: 103, years: 0, vol: .1}).price, M.blackScholes({...p, spot: 103, years: 0, vol: .8}).price);
+console.log(`PASS ${checks} numerical checks: payoff, Black–Scholes and Black-76 benchmarks, sensitivities, parity, IV, event/forward variance, repricing, boundary cases, tape and OI.`);

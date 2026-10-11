@@ -52,6 +52,23 @@
     const result = (low + high) / 2;
     return Math.abs(blackScholes({...inputs, vol: result}).price - price) < 1e-7 ? result : null;
   }
+  // Premium-paid European option on a positive forward/futures price.
+  // With deterministic rates, q=r in the spot formula gives forward sensitivities.
+  function black76({type = 'call', forward, strike, years, vol, rate = 0}) {
+    const result = blackScholes({type, spot: forward, strike, years, vol, rate, yieldRate: rate});
+    return {...result, rho: result.rho === null ? null : -years * result.price / 100};
+  }
+  function eventVol({baseVol, days, eventDay, eventMove = 0}) {
+    if (![baseVol, days, eventDay, eventMove].every(Number.isFinite) || baseVol < 0 || days <= 0 || eventDay < 0 || eventMove < 0) throw new RangeError('Invalid variance input');
+    const years = days / 365;
+    const variance = baseVol ** 2 * years + (days >= eventDay ? eventMove ** 2 : 0);
+    return {vol: Math.sqrt(variance / years), variance, move: Math.sqrt(variance)};
+  }
+  function forwardVol(vol1, years1, vol2, years2) {
+    if (![vol1, years1, vol2, years2].every(Number.isFinite) || vol1 < 0 || vol2 < 0 || years1 < 0 || years2 <= years1) return null;
+    const variance = (vol2 ** 2 * years2 - vol1 ** 2 * years1) / (years2 - years1);
+    return variance < -1e-12 ? null : Math.sqrt(Math.max(0, variance));
+  }
   const parity = (spot, strike, years, rate, yieldRate = 0) => spot * Math.exp(-yieldRate * years) - strike * Math.exp(-rate * years);
   function quoteRule(price, bid, ask) {
     if (![price, bid, ask].every(Number.isFinite) || bid < 0 || ask <= bid) return 'unknown';
@@ -60,6 +77,6 @@
   }
   const tickRule = (price, previousDifferent) => !Number.isFinite(previousDifferent) || price === previousDifferent ? 'unknown' : price > previousDifferent ? 'buy' : 'sell';
   const oiChange = (buyerOpens, sellerOpens, quantity) => buyerOpens && sellerOpens ? quantity : !buyerOpens && !sellerOpens ? -quantity : 0;
-  const api = {cdf, intrinsic, payoff, blackScholes, impliedVol, parity, quoteRule, tickRule, oiChange};
+  const api = {cdf, intrinsic, payoff, blackScholes, black76, impliedVol, eventVol, forwardVol, parity, quoteRule, tickRule, oiChange};
   if (typeof module !== 'undefined') module.exports = api; else root.OptionsMath = api;
 })(typeof window !== 'undefined' ? window : globalThis);
